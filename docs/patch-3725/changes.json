@@ -1,0 +1,1354 @@
+[
+  {
+    "path": "bin/busybox",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 434259,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "fbba184a9933ce95d024d2d53d9e5c405db8868611d680eceaa494491c3df353"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 434259,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "6b4dcf3daf4279b29025991e9cb3966e111016983e7def7e800c67a1ed185a41"
+    }
+  },
+  {
+    "path": "etc/defaults/config_db.conf",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 170136,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "367d00b594a250cf0ab51c1ba8c6503d4bb2b84c096f70b2fb1e5f1b90f4293a"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 170136,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "12b6bd2eaab4a458f9275fadc32fad1b4f18b7444592b7259500da3cd680508a"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/defaults/libproto.gz",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 793804,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "3ae2e70634c9763fbbf51e5ef7465eeb7e3c872838fef3a06172a2c8d56441f7"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 793807,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "3baf87314dad788709d41c533dda4b4af92fe2d212f01867dbdf4d01574ca3e1"
+    }
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_cn.json",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100664",
+      "size": 521,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "5866df9fc418ea5aabedbc3ce19df0de49dcdb59104846b20e49d56f50958a43"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_en.json",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100664",
+      "size": 558,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "bfeb55094c07229af5e6744330197b9663abfdfda79e6a84487207c5e0ddbed7"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_sg.json",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100664",
+      "size": 528,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "07ac13b1ec02e511f4f3de508fdaa0816a2c6c1f1f70b4b33ecc43c383e86a3b"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/ikcommon",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 4921,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e22d81b258bd2c49e1c7f023d36d50506d89924f424a7ca998097bbc3e0a5172"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 4930,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "4b4330edc82a40451cbff116a913bda3997e6efff224f8b50cd9473f5c0663bb"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/inform/host_event.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 5490,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "be338b8a95ddae326279ba8fb74ee5cf292ce70eb91683eb7fe5c1747eb389b4"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 5900,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "af3c038532f1613f7113065530aaaeec33c7d7c6c1670c7380abf8f654ff9960"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/release",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 351,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "ea2a3f8f31756607db3a1153fed49c4b54839b24b76e030097466d298ad597f6"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 351,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "3a83a914253c50ce3df10cc3714d7628e00040c44223a4879fdd02dc815386fd"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/setup/rc.console",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 5590,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "4ee820cccd57ad22c3ea62d7030a6db44e851eb0c68120da973baed6d20e8068"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 12171,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c7f95f2594b1b4483c0b2d601abffaf1ce21579f8ef43deb4e9c93717e3a9203"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "etc/ssl/default",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o40775",
+      "size": 1024,
+      "uid": 0,
+      "gid": 0
+    }
+  },
+  {
+    "path": "etc/ssl/default/console_ssh_allowlist.enc",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100644",
+      "size": 160,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "60fbf5a18b97437dc52e870029bddd317e5ddcf694b58dbfdc7d653cfceaaf00"
+    }
+  },
+  {
+    "path": "etc/ssl/default/console_ssh_allowlist.sig",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100644",
+      "size": 71,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a794e2dab9efc065390ec146290f1a719d094984636bb91eb0113b0269e9a34a"
+    }
+  },
+  {
+    "path": "etc/ssl/default/device_auth.pem",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100644",
+      "size": 178,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "85552699846dd2461bc29019a7b2f6a7e337bed7a58c4f4646c37e610692fa0a"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/bin/ik_audit_client",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 49597,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "898c1d001aad944ae590c983a0181aad6be8a7e47e854a929a61940821975b1a"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 49597,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "0f4895aeb359c6a881d6020f1cf4aafebd2d3319b05a0dbb523f9153b3c51958"
+    }
+  },
+  {
+    "path": "usr/ikuai/ac/patch/include/load_config.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 37152,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "6619279fbee38d97ff224809b3599c57fc4db8428fbb828ccbbcb91921e6be76"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 37315,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "4395daf92589023d6b461159c424121dabb7fa34bbdcd9e1fb5bd1fc294b25d0"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/ac/patch/include/urlcode.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 678,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "9d74e8db4f9140f4561cab6c33e3b026c831c853f76bbdaac4c3c8a13ec388e0"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 1270,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "ff5839570f64c20487c52635b06485273645f265e54756a1fe6fa6d56967624f"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/iklua/string/check.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 10124,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "91215acd15fda1aa7b76dac11a9b3038f2b57cb212ae7d2217d1f02dffb5f630"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 10121,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c8974564050ed870c0263fb5e2bed95ed94deb15c504f04c6fb8caafa367ba68"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/ac/batch_edit.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 26067,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "d0177f951629dc07a1fc097c0222ac95801eae87d4fccd08b100e8c414f19db4"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 26066,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "6d2625e2d709027fece630c8743c1e45495b5c123edd30ec386877e69ea6250d"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/check_varl.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 7237,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c1c42cf039abc3e21a94e100cd7917c68b0fb75ecdc06755a286dbf6234c073e"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 7283,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "79074596159dc24bfdbc4ca73d54097a232c4543ec9bd0b867a33affa30e7bf2"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/iproute.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 4984,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "3931fbf76543e2c5e3750ff2c654f990779cd0275959bf6a790e706dde0a84bb"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 5031,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "8876fc465b2278f6c43a64b88ee308265fb5abe075dc11e58c020b9ddfdd5510"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/json.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 4813,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "226751eda3320c896a9457bf76f98faa7c19124268d39e442e225a30c091a5b6"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 5269,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "caefdcee30cd02377fa4c5dc795452c515845aa95f745ed5cc6ae84d93db5ba3"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/openvpn.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 3220,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "28c8e9f0effccba74f6528689fb66a83803d065f819e74d4389961b8f82ef9df"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 3594,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "318a89338a354d88fa830b7f7b9a327dc43bf8e58588f5b6c8e77e5836fd8e27"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/route_rule.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 1010,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "b0f581eb9084d4635ef1b1a6c76d3dc4254571f702ac06dfddd5e244e774c310"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 1722,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7fa27ee1b9181b854ab931320955e30e200787df3b3b2fb46dad8c928f7aada8"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/sqlite.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 12109,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "24e6ce5904eb81e7795b5b34f739d1859d552d8f5b23ec1e3b843e10f078ac2f"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 13527,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "bb3233be88597c248ab4623e33e6ed46deea5d2bbd4fe5039540dc7ab9c66a52"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/urlcode.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 714,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "034fd7816117bcd5264f730601d46a227f165fa47d8245280f1367e2fd3a901e"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 1507,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "9321c3d819a5eb3c4d88a23db66416f7b864f542eb52ae50612a1835db34d945"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_gx2600.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 3994,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "87e9a89cae9527d713ea52e57dbb2f22cccc5c2ecb8c490844ee518342031cb7"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 4406,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "03597689e5977282f7831fde9e111b896cdfdf31d97a7477bb3141425e902118"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_mac80211.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 1518,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7733c13e799d96d2999b6b6e0bd7e954dbcdeb4399791a705f115e27a0e8e8b8"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 1928,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "dadf7e26a773a8febebab3f5f8fdd0600f1fd14b651062f41f27e16ad22fca11"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_mediatek.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 3140,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a17b63a8fb9ff12ffaadba6ab00cd5f9143a2cefa8222f48170dc27b7c026784"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 3552,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "0db9458acadfbeac3919f7f8529578b95ec85b4aabed4b1524de07559cd96099"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_qcawifi.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 2512,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "59466a2abf1e58a8ed67fa85d596f7cd96c7fb611e45211552babf3579b2cb86"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 2922,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "267e91a67e05e1f49db6886faa54c8d7c1def7ec7eb1b22ed1c3e05e87045abd"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/mesh.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 38993,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "83273d0591efc5abf74f1563ac761fb08859c859c71223e6a61d85a8b7926057"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 39402,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "1cb0c18635dd5e4de5649759016c9e0660af900a9057d7ccb8d3cb5e6a88d10c"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/include/wifi/qcaextend.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 6779,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "27e3973d3a9bb2c5087bc1a49c8200aa38b43096e32d037c8f4f5f115e5ec175"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 7185,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "66af7ddc293fe2632c2899bfa5992529de830eed0c3c9da10c897348d31c1be8"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ac_group.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 30014,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "9ccf95e581c3d1438c3c30bca7074f23db10d8fb5239ab5e431b72d741b1d271"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 30012,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "57287863c53541236dd07b460aa556fa7699a4e9b7e3955c9a22f5891ad5efa9"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ac_net_optimize.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 16916,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "519d60c2c248511e6c43a8d887f7999a496cc1e26eca17675233368c9256ad9c"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 16948,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "080ab183fc8a7bd8a0b1d92a37ec431125dfac44f9c4d1fe34be9f56e0478580"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ac_server.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 71415,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c6144087b02231574af3fcb61da8ea0355a4df1271d6eaf456d0490950680b54"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 71412,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "707da7b78909e545eec52adf594b3157f0d978a8ac4996dbf3a1edd9769e81a7"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/acl.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 11491,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "8decbbc9ea2b4d1bc158ba0079289e8bec1883782f179305c3eb9f5d43f50514"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 11571,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e5f3cf2fc34cba19a75c9a69b729efc2be9ebd477a606a91517386826b904600"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/audit_url_log.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 5231,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "89f274e83810f329d75e0756007e25e9817a92d0e8c3473a0530a5e8c2e64798"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 5300,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "730aa6e2e792c3e2dc0bf7d13f5d8abd451fe9ddf8d7393b9ac3571818fb478a"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/dprotos.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 5301,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "5838dae24c5cf0129ebbfeb733566216986d30b1fb0a51dc52158f49ce189482"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 5301,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "9bd3a7ff33a5b6760800f173fac46a55f4bdf0aaed022ec567f110fe8c63b902"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/dprotos_l7.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 3299,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "d87dff15dd9835283d651a46e4d5b745af305da8a8c2860da01fa38d999d5259"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 3299,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "9acb52e067906923f71198007b5882cde36b09bd9488840c0b02f25dee02fe5b"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ik_event_imlog.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 1893,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "bd7a2ee9b6c9285b717e3e550e78cbafec96761ab44c6193181c11b7c2ad3442"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 1959,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a76455c30ad4960613649d9da34d0d870ae10b4675d5644234d222804f36c808"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ik_netoptimize.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 2949,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e79103cef23791ac0137504f41e1b782f76f1c28e960c787082ebb83ba15ab41"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 3405,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7139358a17e3b713b9e7b9439687cce86ad2a3f16e663d696536ebf1495cd458"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/ipv6.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 60213,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "115f12c9fedd52e994f572cdb4d64364209eaf779acf9351f55bf5d6008d3379"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 60560,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c9b11d8369fbd05ce361210541155ee69271f3c3f672918d0b995a7681c04529"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/mac_app.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 7419,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "d8176a7261211ba20071605aa9e3a830005de09bc1230d20e583ad18565ab7ec"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 7524,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "5d834b08a0260d8f77a7cc4ca3cee6dd363197aee2d2c987590533eecf384b70"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/monitor_lanip.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 11122,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "b4f8824f336bf0734380c6e5541c487900aaca99fa5df562aca6039eb76c8500"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 11146,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "b051de21aae6c83e45a52d8e8066b472c5245ad48802f3a0dcac85c88351c3d8"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/openvpn-client.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 10846,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "962f52ddcc7b67756ada8e3dcf4d3df5b1c80341a8b49bd7060ac83800cbdf7c"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 10850,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7614f6dd15e49bed5327e1ebd08cb396e898cc8befab8eafd18ba3b8ca302195"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/pppoe_server.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 11557,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "794f2a0db647b409888b02e617a6281a29e0595c6d3d26cb2cac53064f58f37b"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 11730,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "0fe36fc783fb9ae890388ac593a0f4a99dbbdf11922ef6b7b0c6bc1ce58db6e0"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/rc",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 31067,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "af1b4f9bb59e5ea2af820f80b66994769616262012a979de34c687bccca20018"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 34816,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a357283fcdd1e42d04e61ab5b740763634e6226573621300fc27bbc7c8560a7a"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/send_log.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 1330,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "03d52353c304a82ac0495401d4b300b4ab71e0aee74177b323f869c34ffd7196"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 1327,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "fe17ef5efe41acb9af8503914ac3fb3694f61064624d821a235b761eec591d8d"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/static_rt.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 6605,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "be68dfeec9fd5a9d0492b50b903c048213b491778a74970074fc8073643a541a"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 6685,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e3e25d262f04e0cfa7348d44887a4eb1b085a2bc924fff54daa9527d3de5863d"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/stream_ipport.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 11600,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "cf0073efe6667d101b766fa3f2a582adec5bf8a2ac38714f3fdd8f110c222b57"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 11600,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "d492f35d6f497bff4c06b9fc6a661abdce84d220b6b32f91891ac5d98278cde3"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/url_black.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 4883,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "fc10eab0be30c761dea517f3ccefbd6aeb5c043d8a2ce37a2e7922e4ef9857f7"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 4881,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "19d342ac04ab46f7792fbb96a5c23c32ee607699404205d329af71c1c946974d"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/ap_load.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 20755,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a3391a7d71a2a648f3eac8aa356a6dc608b4f27c84d1918d731468e5aaa22b9d"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 20907,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "0cacab6343926611474138b4c67572745e8a87f37bf6657be1d4653c9242c9ab"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/async.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 1830,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "4875cc943f8e490766ca21b23c81b9ac90ea36485aab37144de4e1f555983f0f"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 2067,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "2b4b78d4fca0944be14b080b376838c3d0b4f8c55d07bfc372610741ecdf1a08"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/cloud_switch.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 111761,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "cfb9a1b54fe98e7829bbd6c7437cb07a6b58562257a90c5d2c13d0a862b776aa"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 113299,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "50bfd7b54a9fcc95e54ae8bcfa1ac1a4f22a0d6bf54ea8435ee03439a861a018"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/convert_config_old.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 68054,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "4a77b77965d725d9da09891d7529116accd001d96c509e58a8f3a5d780c2cd0c"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 68054,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "1bb1471b36c22a1195ef8d8fe27ae161c461c5cd8799007f762dc73993222098"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/convert_config_old_mips.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 53376,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "6c0d98c1fda818e412be59f0e4deb5c88f9695f9451de5c7565b2095da41f1ea"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 53376,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e9e347e0b699da04ebc44cc1eeb1a2275a3733be750078768a10b49b0d3fe90e"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/devdiscovery.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 24411,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "b1fec0c4ee0508d835cd007238991ca8567def19c754878630a43a1b69f9410c"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 25767,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7b60f041c563907cedc71c4d97322f16f5202acfde03e5e2c4337e4937dae804"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/ldapinfo_load.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 3147,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "3429a7287333d77911fcabe861acfcf99a7274726a19a570f69da5d40b2e2f57"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 3251,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "25454bf97872b024468ac989ec02cd6f00e38f78744b3c717e0507022505d8ba"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/monitor_process.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 10370,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "398d039d9807889a847186cc3c087730b32b28bf4c0102efe1f9991ff6ec2e84"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 12945,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "1113d76103b03b9b3f13c268413b4b1a06db993e982ba6ab10f5962a770165df"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/submit.lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 2869,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "6639018b97104ec642828999a3e9629ac82841f607aa21c32a088c8c18f24109"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 3217,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "43a9b1d9f6588913e8102e95d56055fa44c13e824563d1d50752e9d3a5a97cb6"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/utils/update_hosts.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 2395,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "2cd97ebdba7dbd8c6088f79cf1da1df0ea282d90014909584692ded4f98e17cc"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 2843,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "de73f2317992ea1bdaf15106d778dce9aab5c6100608f7d84591fbbb16e1bc5c"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/wan.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 62428,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "53d8b231d8d2bb1d903bf2754ea4a7ca1b4725d6ba915e8c520d4ffc3d7288e9"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 62428,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "7cebe35834db461e35ec4913431099ed9e16354dd8514c53ca8f378c38979ac8"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/script/webauth.sh",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 37480,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "2e15f1e82e4395aa0d91e891cfd619418b5eb7f4f57a25a14bcf8212f8801e1a"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 38628,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "afa67c6c4c24ef7fb8b34b14712ab4b55278cadc5d1f757707aa193ee8366faa"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/ikuai/submit",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o40775",
+      "size": 1024,
+      "uid": 0,
+      "gid": 0
+    }
+  },
+  {
+    "path": "usr/ikuai/submit/submit3",
+    "change": "added",
+    "before": null,
+    "after": {
+      "mode": "0o100664",
+      "size": 21156,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "5f1e9211cf1ff672499dd920698d10b7bcb6b9c2041e44229f716b6f2c5b582e"
+    }
+  },
+  {
+    "path": "usr/lib/libdtalkd.so",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 37717,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "f6b243ddb69cd3180b0e5342742a176e20b54e493a15207e8c6c6a41918993e7"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 37717,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "518e06bc4fb8b477c6f293cdbd4a82cd07f1a5e8c001b10c7414c6de7541820a"
+    }
+  },
+  {
+    "path": "usr/lib/libreadline.so.7.0",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 267163,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "209d381e7391b444ef5c6a5efdd3ef8a79cd9ff6f98e213f001fe6039a680224"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 267163,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "13e7e2847bdaedfd4c8b4be5a50ea1cdd8582e62c623c7404a0b2a33b5cc9d61"
+    }
+  },
+  {
+    "path": "usr/lib/lua/lsqlite3.so",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 49154,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "5c1e9a0911a7dfec97ff17b58e1e77e0f0ccb9b6ed9f60c5ef27397715b5b5a9"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 49154,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "88a6f1048b91af92f4320e86d7810f9843ae05121cdb0386a83ac8b14a9e6f34"
+    }
+  },
+  {
+    "path": "usr/sbin/cre",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 73859,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "b1a9b019bd8337a858f5480df46db1cd485056b9bd42948294b492d29115dd90"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 73859,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "c1ec73662e0704ff48ed63eace703475d5ccc9e8b9b018a37ce4127a10faf791"
+    }
+  },
+  {
+    "path": "usr/sbin/ik_http_lua",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 416889,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "bbf49744d58b19f809ed57a7ec15304d4955d73101f07648977004e2e5a9dd91"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 416889,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "2bfb99ea614f741386af28e769de7f9cd293257a12b174c3252a10fe9dda21c5"
+    }
+  },
+  {
+    "path": "usr/sbin/ik_rc_client",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 113020,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "d68a43e98911b5f49ff3621efe7bbd6cda9468a40a55b8f0b5b7320131327bc7"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 113020,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "47dc59dec0d07ac4337f92c7132bfaebf6d074c5361f2dcbe7ff4d15c8c99ecb"
+    }
+  },
+  {
+    "path": "usr/sbin/iktimerd",
+    "change": "modified",
+    "before": {
+      "mode": "0o100775",
+      "size": 76754,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "49e1439e45ec2b4c06b3326175ed0c714d3d5362530e1eb12014f1529856b505"
+    },
+    "after": {
+      "mode": "0o100775",
+      "size": 77101,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "020525caaa6b206ba0163ca21b5243846291e06638de03fffa695b5a9226e9c6"
+    },
+    "text_diff": true
+  },
+  {
+    "path": "usr/sbin/miniupnpd",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 119137,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "e2237440cdc4c93fccf83f2da3114d11075e641c1120b49155c585f89dd56fff"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 119137,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "a628a252ecccbbf998e1210d22c4a075700c22ba485798ff90580cc34ebfdfc1"
+    }
+  },
+  {
+    "path": "usr/sbin/pmd",
+    "change": "modified",
+    "before": {
+      "mode": "0o100755",
+      "size": 80013,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "8c29d6112a84694ac17f8e61d90f9729dadf6cb71b242db24c6364363a7d2433"
+    },
+    "after": {
+      "mode": "0o100755",
+      "size": 80013,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "230f2470bf8d2a9784ec87871e07ef4759954be434306e5af684f4176990ec7f"
+    }
+  },
+  {
+    "path": "usr/share/usb.ids.gz",
+    "change": "modified",
+    "before": {
+      "mode": "0o100664",
+      "size": 211943,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "f308ffdfb0b5a6d5e88b1a53d7166cab9e73ba4a514a7f374e356fbed62553c5"
+    },
+    "after": {
+      "mode": "0o100664",
+      "size": 211943,
+      "uid": 0,
+      "gid": 0,
+      "sha256": "bd16578da88df9620db68e71a0fe1317e923e203c8df08d44c3be9284d1cc82d"
+    }
+  }
+]

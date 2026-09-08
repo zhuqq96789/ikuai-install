@@ -1,0 +1,3222 @@
+--- 3.7.24/etc/defaults/config_db.conf
++++ 3.7.25/etc/defaults/config_db.conf
+@@ -3232,7 +3232,7 @@
+ delete from level_sw where aid=new.aid;
+ END; 
+ 
+-INSERT into version(ver,sysver) values(202608141210,300070024);
++INSERT into version(ver,sysver) values(202609021525,300070025);
+ INSERT into global_config(id) values(1);
+ INSERT into alg_config(id) values(1);
+ INSERT into basic(id) values(1);
+--- 3.7.24/etc/get_hosts/ik_hosts_v4_cn.json
++++ 3.7.25/etc/get_hosts/ik_hosts_v4_cn.json
+@@ -0,0 +1,29 @@
++{
++  "submit_report": [
++    "report.ikuai8.com"
++  ],
++  "__comment__": "国内版使用",
++  "cycle": 3600,
++  "submit": [
++    "download.ikuai8.com:32015"
++  ],
++  "register": [
++    "yun.ikuai8.com"
++  ],
++  "route_collect": [
++    "coll.ikuai8.com:2016",
++    "59.110.6.135:2016"
++  ],
++  "remote_ikuai": [
++    "ctrl1.ikuai8.com:6000",
++    "ctrl2.ikuai8.com:6000"
++  ],
++  "pkgmanager": [
++    "pkgmgr-v4.ikuai8.com:1864",
++    "123.56.230.35:1864"
++  ],
++  "catcherd": [
++    "datacollect.ikuai8.com:2221",
++    "123.57.14.224:2221"
++  ]
++}
+--- 3.7.24/etc/get_hosts/ik_hosts_v4_en.json
++++ 3.7.25/etc/get_hosts/ik_hosts_v4_en.json
+@@ -0,0 +1,29 @@
++{
++  "submit_report": [
++    "cloud-service.ikuai8.com"
++  ],
++  "__comment__": "This is Overseas",
++  "cycle": 3600,
++  "submit": [
++    "download.ikuai8.com:32015"
++  ],
++  "register": [
++    "cloud-service.ikuai8.com"
++  ],
++  "route_collect": [
++    "cloud-service.ikuai8.com:2016"
++  ],
++  "pkgmanager": [
++    "123.57.179.21:1863",
++    "123.57.179.21:15602",
++    "pkgmanager.ikuai8.com:15602",
++    "59.110.6.135:1863",
++    "59.110.6.135:15602"
++  ],
++  "remote_ikuai": [
++    "cloud-service.ikuai8.com:6000"
++  ],
++  "catcherd": [
++    "cloud-service.ikuai8.com:2221"
++  ]
++}
+--- 3.7.24/etc/get_hosts/ik_hosts_v4_sg.json
++++ 3.7.25/etc/get_hosts/ik_hosts_v4_sg.json
+@@ -0,0 +1,29 @@
++{
++  "submit_report": [
++    "report.ikuai8.com"
++  ],
++  "__comment__": "日本版",
++  "cycle": 3600,
++  "submit": [
++    "sg-download.ikuai8.com:32015"
++  ],
++  "register": [
++    "sg-yun.ikuai8.com"
++  ],
++  "route_collect": [
++    "sg-dis.ikuai8.com:1853",
++    "8.211.156.11:1853"
++  ],
++  "pkgmanager": [
++    "sg-pkgmanager.ikuai8.com:1863",
++    "8.211.156.11:1863"
++  ],
++  "remote_ikuai": [
++    "sg-as1.ikuai8.com:9443",
++    "sg-as2.ikuai8.com:9443"
++  ],
++  "catcherd": [
++    "datacollect.ikuai8.com:2221",
++    "123.57.14.224:2221"
++  ]
++}
+--- 3.7.24/etc/ikcommon
++++ 3.7.25/etc/ikcommon
+@@ -117,14 +117,11 @@
+ 		local L=2
+ 	fi
+ 
+-	local n=$#
+-	local param
+-	local format="\$${1}_${L}"
+-	for((i=2;i<=$n;i++));do
+-		shift 1
+-		param+=" \"$1\""
+-	done
+-	eval printf "\"$format\\n\"" "$param"
++	local format_var="${1}_${L}"
++	[[ "$format_var" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++	local format="${!format_var}"
++	shift
++	printf -- "${format}\\n" "$@"
+ }
+ 
+ #自动国际化输出, 不需要提前预加载
+@@ -143,15 +140,11 @@
+ 		local L=2
+ 	fi
+ 
+-	local n=$#
+-	local param
+-	local format="\$i18n_${1}_${2}_${L}"
+-	shift 1
+-	for((i=3;i<=$n;i++));do
+-		shift 1
+-		param+=" \"$1\""
+-	done
+-	eval printf "\"$format\\n\"" "$param"
++	local format_var="i18n_${1}_${2}_${L}"
++	[[ "$format_var" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++	local format="${!format_var}"
++	shift 2
++	printf -- "${format}\\n" "$@"
+ }
+ 
+ #将版本号转换成整数
+--- 3.7.24/etc/inform/host_event.sh
++++ 3.7.25/etc/inform/host_event.sh
+@@ -16,8 +16,31 @@
+ #解码
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo "${str//[\"\']}"
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ __check_ip_in_ranges()
+--- 3.7.24/etc/release
++++ 3.7.25/etc/release
+@@ -1,12 +1,12 @@
+ PORTAL=portal.ikuai8-wifi.com
+ FIRMWAREID=10001
+ FIRMWARENAME=IK-RouterOS
+-GITCOMMIT=890231a
++GITCOMMIT=a615d39
+ LINUX_VERSION=5.10.194
+ KERNEL_PATCHVER=5.10
+-VERSION=3.7.24
+-VERSION_NUM=300070024
+-BUILD_DATE=202608141210
++VERSION=3.7.25
++VERSION_NUM=300070025
++BUILD_DATE=202609021525
+ MODELTYPE=X86
+ ARCH=x86
+ SYSBIT=x64
+@@ -14,4 +14,4 @@
+ SUPPORT_VCACHE=true
+ SUPPORT_DTALK=true
+ SUPPORT_WECOM=true
+-VERSTRING="3.7.24 x64 Build202608141210"
++VERSTRING="3.7.25 x64 Build202609021525"
+--- 3.7.24/etc/setup/rc.console
++++ 3.7.25/etc/setup/rc.console
+@@ -6,6 +6,237 @@
+ STTY_DEFAULT=$(stty -g)
+ READ_INPUT_WAIT=86400
+ DEVTTY=$(readlink /proc/$$/fd/1)
++WHOAMI_PUBLIC_KEY="/etc/ssl/default/device_auth.pem"
++CONSOLE_RELEASE_FILE="/etc/release"
++CONSOLE_SSH_ALLOWLIST_ENC="/etc/ssl/default/console_ssh_allowlist.enc"
++CONSOLE_SSH_ALLOWLIST_SIG="/etc/ssl/default/console_ssh_allowlist.sig"
++CONSOLE_SSH_PUBLIC_ALLOWLIST=""
++
++
++WHOAMI_FAIL_COUNT_FILE="/tmp/console_whoami_fail_count"
++WHOAMI_FAIL_LOCK_DIR="/tmp/console_whoami_fail_count.lock"
++
++record_whoami_failure()
++{
++	local count tmp
++
++	mkdir "$WHOAMI_FAIL_LOCK_DIR" 2>/dev/null || return 1
++
++	count=$(cat "$WHOAMI_FAIL_COUNT_FILE" 2>/dev/null)
++	[[ "$count" =~ ^[0-9]+$ ]] || count=0
++	count=$((count+1))
++
++	tmp=$(mktemp /tmp/console-whoami-fail-count.XXXXXX) || {
++		rmdir "$WHOAMI_FAIL_LOCK_DIR" 2>/dev/null || :
++		return 1
++	}
++	if ! printf "%s\n" "$count" > "$tmp"; then
++		rm -f "$tmp"
++		rmdir "$WHOAMI_FAIL_LOCK_DIR" 2>/dev/null || :
++		return 1
++	fi
++	chmod 0600 "$tmp"
++	if ! mv -f "$tmp" "$WHOAMI_FAIL_COUNT_FILE"; then
++		rm -f "$tmp"
++		rmdir "$WHOAMI_FAIL_LOCK_DIR" 2>/dev/null || :
++		return 1
++	fi
++	rmdir "$WHOAMI_FAIL_LOCK_DIR" 2>/dev/null || :
++}
++
++
++get_device_gwid()
++{
++	local device_gwid
++	device_gwid=$(awk -F= '$1=="GWID"{print $2; exit}' "$CONSOLE_RELEASE_FILE" 2>/dev/null | tr 'A-F' 'a-f')
++	[[ "$device_gwid" =~ ^[0-9a-f]+$ ]] && [ "${#device_gwid}" -eq 32 ] || return 1
++	printf '%s' "$device_gwid"
++}
++
++GWID=$(get_device_gwid 2>/dev/null)
++
++load_console_ssh_allowlist()
++{
++	local decrypted derive_key
++	CONSOLE_SSH_PUBLIC_ALLOWLIST=""
++	[ -r "$CONSOLE_SSH_ALLOWLIST_ENC" ] || return 1
++	[ -r "$CONSOLE_SSH_ALLOWLIST_SIG" ] || return 1
++	[ -r "$WHOAMI_PUBLIC_KEY" ] || return 1
++
++	# The public key derives the package wrapping key; authenticity comes from
++	# the ECDSA signature below. No allowlist plaintext is shipped in the image.
++	derive_key=$(openssl dgst -sha256 "$WHOAMI_PUBLIC_KEY" 2>/dev/null |
++		awk '{print $NF}')
++	[[ "$derive_key" =~ ^[0-9a-fA-F]{64}$ ]] || return 1
++	decrypted=$(mktemp /tmp/console-ssh-allowlist.XXXXXX) || return 1
++	if ! openssl enc -d -aes-256-cbc -in "$CONSOLE_SSH_ALLOWLIST_ENC" \
++		-out "$decrypted" -pass "pass:$derive_key" >/dev/null 2>&1; then
++		rm -f "$decrypted"
++		return 1
++	fi
++	if ! openssl dgst -sha256 -verify "$WHOAMI_PUBLIC_KEY" \
++		-signature "$CONSOLE_SSH_ALLOWLIST_SIG" "$decrypted" >/dev/null 2>&1; then
++		rm -f "$decrypted"
++		return 1
++	fi
++	CONSOLE_SSH_PUBLIC_ALLOWLIST=$(cat "$decrypted")
++	rm -f "$decrypted"
++	[ -n "$CONSOLE_SSH_PUBLIC_ALLOWLIST" ]
++}
++
++load_console_ssh_allowlist || CONSOLE_SSH_PUBLIC_ALLOWLIST=""
++
++
++ipv4_to_u32()
++{
++	local ip="$1"
++	local first second third fourth part value=0
++	IFS=. read -r first second third fourth <<< "$ip"
++	for part in "$first" "$second" "$third" "$fourth"; do
++		[[ "$part" =~ ^[0-9]{1,3}$ ]] && [ "$part" -le 255 ] || return 1
++		value=$(( (value << 8) | 10#$part ))
++	done
++	printf '%u' "$value"
++}
++
++ipv4_cidr_match()
++{
++	local source_ip="$1"
++	local network="$2"
++	local network_ip prefix source_value network_value mask
++	if [[ "$network" == */* ]]; then
++		network_ip="${network%/*}"
++		prefix="${network#*/}"
++		[[ "$prefix" =~ ^[0-9]+$ ]] && [ "$prefix" -le 32 ] || return 1
++	else
++		network_ip="$network"
++		prefix=32
++	fi
++	source_value=$(ipv4_to_u32 "$source_ip") || return 1
++	network_value=$(ipv4_to_u32 "$network_ip") || return 1
++	if [ "$prefix" -eq 0 ]; then
++		return 0
++	fi
++	mask=$(( (4294967295 << (32 - prefix)) & 4294967295 ))
++	[ $((source_value & mask)) -eq $((network_value & mask)) ]
++}
++
++get_ssh_source_ip()
++{
++	local source_ip
++	[ -n "$SSH_CONNECTION" ] || return 1
++	source_ip=$(printf '%s\n' "$SSH_CONNECTION" | awk 'NF >= 4 {print $1; exit}')
++	ipv4_to_u32 "$source_ip" >/dev/null || return 1
++	printf '%s' "$source_ip"
++}
++
++get_ssh_route_device()
++{
++	local source_ip="$1"
++	ip route get "$source_ip" 2>/dev/null |
++		awk '{for (i = 1; i <= NF; i++) if ($i == "dev") {print $(i + 1); exit}}'
++}
++
++is_ssh_ip_allowlisted()
++{
++	local source_ip="$1"
++	local entry
++	while IFS= read -r entry || [ -n "$entry" ]; do
++		entry="${entry%%#*}"
++		entry="${entry//[[:space:]]/}"
++		[ -n "$entry" ] || continue
++		ipv4_cidr_match "$source_ip" "$entry" && return 0
++	done <<< "$CONSOLE_SSH_PUBLIC_ALLOWLIST"
++	return 1
++}
++
++is_ssh_whoami_allowed()
++{
++	local source_ip route_device
++	source_ip=$(get_ssh_source_ip) || return 1
++	route_device=$(get_ssh_route_device "$source_ip")
++	[ -n "$route_device" ] || return 1
++	case "$route_device" in
++		wan*|vwan*|adsl*)
++			is_ssh_ip_allowlisted "$source_ip"
++			;;
++		*)
++			return 0
++			;;
++	esac
++}
++
++is_local_console()
++{
++	[ -z "$TELNETD" ] && [ -t 0 ] && [ -t 1 ] || return 1
++	if [ -n "$SSH_CONNECTION" ]; then
++		is_ssh_whoami_allowed
++	else
++		[ -z "$SSH_CLIENT" ] && [[ "$DEVTTY" == /dev/* ]]
++	fi
++}
++
++create_whoami_challenge()
++{
++	local challenge
++	challenge=$(hexdump -n 8 -e '8/1 "%02x"' /dev/urandom 2>/dev/null) || return 1
++	[[ "$challenge" =~ ^[0-9a-f]{16}$ ]] || return 1
++	printf '%s' "$challenge"
++}
++
++hex_to_binary()
++{
++	local hex="$1"
++	local escaped=""
++	local pair
++	while [ -n "$hex" ]; do
++		pair="${hex:0:2}"
++		escaped="${escaped}\\x${pair}"
++		hex="${hex:2}"
++	done
++	printf '%b' "$escaped"
++}
++
++verify_whoami_password()
++{
++	local signature="$1"
++	local challenge="$2"
++	local signature_file verify_status body r_hex s_hex r_der s_der der_hex
++
++	[ -f "$WHOAMI_PUBLIC_KEY" ] || return 1
++	[[ "$GWID" =~ ^[0-9a-f]+$ ]] && [ "${#GWID}" -eq 32 ] || return 1
++	[[ "$challenge" =~ ^[0-9a-f]+$ ]] && [ "${#challenge}" -eq 16 ] || return 1
++	[[ "$signature" =~ ^[0-9a-fA-F]{128}$ ]] || return 1
++	r_hex="${signature:0:64}"
++	s_hex="${signature:64:64}"
++
++	# Rebuild the ASN.1 DER form expected by OpenSSL from fixed-width r||s.
++	der_integer()
++	{
++		local value="$1"
++		while [ "${#value}" -gt 2 ] && [ "${value:0:2}" = "00" ]; do
++			value="${value:2}"
++		done
++		if [[ "${value:0:1}" =~ [89a-fA-F] ]]; then
++			value="00$value"
++		fi
++		printf '02%02x%s' "$(( ${#value} / 2 ))" "$value"
++	}
++	r_der=$(der_integer "$r_hex") || return 1
++	s_der=$(der_integer "$s_hex") || return 1
++	body="$r_der$s_der"
++	der_hex=$(printf '30%02x%s' "$(( ${#body} / 2 ))" "$body")
++	signature_file=$(mktemp /tmp/console-whoami.XXXXXX) || return 1
++	if ! hex_to_binary "$der_hex" > "$signature_file" 2>/dev/null;then
++		rm -f "$signature_file"
++		return 1
++	fi
++	printf '%s' "ikuai-console-v3:$GWID:$challenge" |
++		openssl dgst -sha256 -verify "$WHOAMI_PUBLIC_KEY" -signature "$signature_file" >/dev/null 2>&1
++	verify_status=$?
++	rm -f "$signature_file"
++	return "$verify_status"
++}
+ 
+ 
+ passwd_auth() {
+@@ -171,7 +402,8 @@
+ 
+ 
+ 	if [ "$__login_console__" = "1" ];then
+-		stty -echo
++		printf "  GWID: %s  Challenge: %s\n\n" "$GWID" "$__login_challenge__"
++		stty echo
+ 	fi
+ 
+ 	if [ "$__update_console__" -o "$SSH_CLIENT" ];then
+@@ -188,11 +420,16 @@
+ 
+ 	if [ "$__login_console__" = "1" ];then
+ 		__login_console__=0
+-		if [ "$(echo "$opmode"|md5sum)" = "6cde61b17465001824a6d58296c7d87f  -" ];then
++		local login_challenge="$__login_challenge__"
++		unset __login_challenge__
++		if is_local_console && verify_whoami_password "$opmode" "$login_challenge" ;then
+ 			stty $STTY_DEFAULT
+ 			clear
+ 			console_banner
+ 			ash --login
++		else
++			record_whoami_failure
++			sleep 1
+ 		fi
+ 	else
+ 		case ${opmode} in
+@@ -219,7 +456,10 @@
+ 			local hide_key="$(echo "$opmode"|md5sum)"
+ 			case "${hide_key:0:32}" in
+ 			"72c5fe66e904745607b30bff453bb75c")
+-				__login_console__=1 ;;
++				if is_local_console && __login_challenge__=$(create_whoami_challenge) ;then
++					__login_console__=1
++				fi
++				;;
+ 			"c44b463610b5e1debbdcb209294593bc")
+ 				switch_apmodel ;;
+ 			"b28bdad85a3c83cabd6eeeb8600da21c")
+--- 3.7.24/etc/ssl/default/device_auth.pem
++++ 3.7.25/etc/ssl/default/device_auth.pem
+@@ -0,0 +1,4 @@
++-----BEGIN PUBLIC KEY-----
++MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhjA/kGkuhX3BB+BCevLa4ibZnojm
++nAuZaKB2wVByJIjksyMeDM6AE6wLKX/CNr8p1ef6RNdFH0WtxR+ncmP9Ig==
++-----END PUBLIC KEY-----
+--- 3.7.24/usr/ikuai/ac/patch/include/load_config.sh
++++ 3.7.25/usr/ikuai/ac/patch/include/load_config.sh
+@@ -7,11 +7,12 @@
+ }
+ 
+ __KeyVal() {
+-	local k x;
+-	for k in ${@} ;do
+-		x+="$k=\$$k "
++	local __keyval_name __keyval_value
++	for __keyval_name in "$@"; do
++		[[ "$__keyval_name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++		__keyval_value="${!__keyval_name-}"
++		printf '%s=%q\n' "$__keyval_name" "$__keyval_value"
+ 	done
+-	eval echo $x
+ }
+ 
+ compat_old_device()
+--- 3.7.24/usr/ikuai/ac/patch/include/urlcode.sh
++++ 3.7.25/usr/ikuai/ac/patch/include/urlcode.sh
+@@ -33,5 +33,43 @@
+ #解码
+ url_decode()
+ {	
+-	eval echo $\'${1//%/\\x}\'
++	url_decode_noeval_raw "$1"
+ }
++
++url_decode_noeval_raw()
++{
++	local s="$1" out="" prefix hex ch
++
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		out+="$prefix"
++		s="${s#*%}"
++
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			out+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				out+="$ch"
++				s="${s:1}"
++			else
++				out+="%"
++			fi
++		fi
++	done
++
++	printf '%s\n' "$out$s"
++}
++
++url_decode_noeval()
++{
++	local str
++	str="$(url_decode_noeval_raw "$1")"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
++}
+--- 3.7.24/usr/ikuai/iklua/string/check.lua
++++ 3.7.25/usr/ikuai/iklua/string/check.lua
+@@ -239,11 +239,11 @@
+ --检查网卡名称VPN和长度
+ function M.ifname_vpn(str)
+ 	if not str then return false end
+-	if str:match("^pptp[%w-_]+")
+-		or str:match("^l2tp[%w-_]+")
+-		or str:match("^iked[%w-_]+")
+-		or str:match("^wg[%w-_]+")
+-		or str:match("^ovpn[%w-_]+")
++	if str:match("^pptp[%w_%-]+$")
++		or str:match("^l2tp[%w_%-]+$")
++		or str:match("^iked[%w_%-]+$")
++		or str:match("^wg[%w_%-]+$")
++		or str:match("^ovpn[%w_%-]+$")
+ 	then
+ 		if str:len() <= 15 then
+ 			return true
+@@ -258,8 +258,8 @@
+ --检查网卡名称和长度
+ function M.ifname_lan(str)
+ 	if not str then return false end
+-	if str:match("^lan%d+") 
+-	or str:match("^vlan[%w-_]+") or str:match("^doc_[%w-_]+") then
++	if str:match("^lan%d+$")
++	or str:match("^vlan[%w_%-]+$") or str:match("^doc_[%w_%-]+$") then
+ 		if str:len() <= 15 then
+ 			return true
+ 		else
+@@ -273,16 +273,15 @@
+ --检查网卡名称和长度
+ function M.ifname_wan(str)
+ 	if not str then return false end
+-	if str:match("^vwan[%w-_]+")
+-	or str:match("^wan[%d]+")
+-	or str:match("^pptp[%w-_]+")
+-	or str:match("^l2tp[%w-_]+")
+-	or str:match("^iked[%w-_]+")
+-	or str:match("^ovpn[%w-_]+")
+-	or str:match("^sdwan[%w-_]*")
+-	or str:match("^sdsaas[%w-_]*")
+-	or str:match("^sdsaas[%w-_]+")
+-	or str:match("^adsl[%w-_]+") then
++	if str:match("^vwan[%w_%-]+$")
++	or str:match("^wan%d+$")
++	or str:match("^pptp[%w_%-]+$")
++	or str:match("^l2tp[%w_%-]+$")
++	or str:match("^iked[%w_%-]+$")
++	or str:match("^ovpn[%w_%-]+$")
++	or str:match("^sdwan[%w_%-]*$")
++	or str:match("^sdsaas[%w_%-]*$")
++	or str:match("^adsl[%w_%-]+$") then
+ 		if str:len() <= 15 then
+ 			return true
+ 		else
+--- 3.7.24/usr/ikuai/include/ac/batch_edit.sh
++++ 3.7.25/usr/ikuai/include/ac/batch_edit.sh
+@@ -765,7 +765,7 @@
+ 		sql_param+=" advanced:int"
+ 		check_param+=" 'advanced == 1 or == 0'"
+ 		if [ "$advanced" = "1" ];then
+-			sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++			sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 			check_param+=" 'beacon_interval >= 100 and <= 1000'"
+ 			check_param+=" 'beacon_txpower  >= 0 and <= 100'"
+ 			check_param+=" 'rts  >= 0 and <= 2346'"
+--- 3.7.24/usr/ikuai/include/check_varl.sh
++++ 3.7.25/usr/ikuai/include/check_varl.sh
+@@ -168,7 +168,7 @@
+ 	#=======================Lua Code============================#
+ 	local ErrorMsg
+ 	ErrorMsg=$(
+-	lua <<!LuaEof!
++	lua - "$S0" "$_______CHECK_VARL_IMPORT_FILE_______" <<!LuaEof!
+ 	VLAN_MAX = $MAX_VLAN
+ 	Argv = {}
+ 	IlleStr       = "['\\"\`$;|&\\\]"		--非法字符
+@@ -197,8 +197,10 @@
+ 		$condition
+ 	end
+ 
+-	if "$_______CHECK_VARL_IMPORT_FILE_______" ~= "" then
+-		f = io.open("$_______CHECK_VARL_IMPORT_FILE_______","r")
++	local input_line = arg[1] or ""
++	local import_file = arg[2] or ""
++	if import_file ~= "" then
++		f = io.open(import_file,"r")
+ 		if f then
+ 			while 1 do
+ 				Line = f:read('*l')
+@@ -215,11 +217,11 @@
+ 			end
+ 			f:close()
+ 		else
+-			print("not found file ($_______CHECK_VARL_IMPORT_FILE_______)")
++			print("not found file (" .. import_file .. ")")
+ 			os.exit(1)
+ 		end
+ 	else
+-		Line=[[$S0]]
++		Line=input_line
+ 		LineNum = 1
+ 		if Line == "" then
+ 			print("need import a filename or need variate 'S0'")
+--- 3.7.24/usr/ikuai/include/iproute.sh
++++ 3.7.25/usr/ikuai/include/iproute.sh
+@@ -167,9 +167,9 @@
+ #iproute_get_markid wan1
+ iproute_get_markid()
+ {
+-	[ "$1" == "" ]&&return 1
+-	local interface
+-	flock /etc/iproute2/rt_tables awk -v interface=$1 '
++	local interface="$1"
++	[[ "$interface" =~ ^[A-Za-z0-9_.:-]{1,15}$ ]] || return 1
++	flock /etc/iproute2/rt_tables awk -v interface="$interface" '
+ 	$2==interface{
+ 		markid=$1;
+ 		print $1;
+@@ -207,4 +207,3 @@
+ 
+ iproute_ipt_rule_add() { __iproute_ipt_rule add $1 ;}
+ iproute_ipt_rule_del() { __iproute_ipt_rule del $1 ;}
+-
+--- 3.7.24/usr/ikuai/include/json.sh
++++ 3.7.25/usr/ikuai/include/json.sh
+@@ -46,7 +46,10 @@
+ json_decode() {
+ 	local json_decode
+ 	local prefx="$1"
+-	local json_str=$(eval echo \$$2)
++	local json_var="$2"
++	[[ "$prefx" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++	[[ "$json_var" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++	local json_str="${!json_var}"
+ 	__json_decode
+ }
+ 
+@@ -55,6 +58,7 @@
+ 	local json_decode
+ 	local prefx="$1"
+ 	local json_file="$2"
++	[[ "$prefx" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
+ 	if [ "${___JSON_ALREADY_LOAD_FILE___[$prefx.$json_file]}" != "1" ];then
+ 		__json_decode
+ 	fi
+@@ -66,6 +70,7 @@
+ 	local prefx="${1//-/_}"
+ 	local json_file="$2"
+ 	local cache_path="$3"
++	[[ "$prefx" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
+ 	__json_decode
+ }
+ 
+@@ -73,53 +78,57 @@
+ {
+ 	if json_decode=$(
+ 
+-	lua<<EOF
+-	cjson = require "cjson"
+-	json_file = "$json_file"
+-	prefx = "$prefx"
++	lua - "$json_file" "$prefx" "$json_str" <<'EOF'
++	local cjson = require "cjson"
++	local json_file = arg[1] or ""
++	local prefx = arg[2] or ""
++	local json_str = arg[3] or ""
+ 
+ 	if json_file ~= "" then
+-		f = io.open(json_file,"r")
++		local f = io.open(json_file,"r")
+ 		if f then
+ 			json_str = f:read("*a")
+ 			f:close()
+ 		else
+ 			os.exit(1)
+ 		end
+-	else
+-		json_str = [[
+-		$json_str
+-		]]
+-	end
+-
+-	res, json_tab = pcall(cjson.decode, json_str)
++	end
++
++	local res, json_tab = pcall(cjson.decode, json_str)
+ 	if not res then
+ 		os.exit(1)
+ 	end
+ 
+-	function format(tab, prefx)
++	local function normalize_key(k)
++		local key
++		if type(k) == "string" then
++			key = k:gsub("-", "_")
++		elseif type(k) == "number" then
++			key = tostring(k)
++		else
++			return nil
++		end
++		if not key:match("^[A-Za-z0-9_]+$") then
++			return nil
++		end
++		return key
++	end
++
++	local function format(tab, prefx)
+ 		for k,v in pairs(tab) do
++			local key = normalize_key(k)
++			if not key then
++				os.exit(1)
++			end
+ 			local T = type(v)
+ 			if T ~= "table" then
+-				--过滤掉带有单眼号的非法内容
+-				if T ~= "userdata" and string.find(v,"\'") == nil then
+-					local ___k
+-					if type(k) == "string" then
+-						___k = k:gsub("-","_")
+-					else
+-						___k = tostring(k)
+-					end
+-					print(string.format("%s_%s=\'%s\'",prefx, ___k, tostring(v)))
++				local value = tostring(v)
++				-- The remaining eval only receives validated assignment syntax.
++				if T ~= "userdata" and string.find(value,"\'", 1, true) == nil then
++					print(string.format("%s_%s=\'%s\'",prefx, key, value))
+ 				end
+ 			else
+-				local __prefx
+-				if type(k) == "string" then
+-					__prefx = prefx .. "_" .. k:gsub("-","_")
+-				else
+-					__prefx = prefx .. "_" .. k
+-				end
+-
+-				format(v,__prefx)
++				format(v, prefx .. "_" .. key)
+ 			end
+ 		end
+ 	end
+--- 3.7.24/usr/ikuai/include/openvpn.sh
++++ 3.7.25/usr/ikuai/include/openvpn.sh
+@@ -9,8 +9,28 @@
+ #URL解码, 保留 (" ')
+ extra_config_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo $str
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	printf '%s\n' "$str$s"
+ }
+ 
+ sql_escape() { echo "$1" | sed "s/'/"'\\'"'/g"; }
+@@ -115,4 +135,3 @@
+ 	fi
+ }
+ 
+-
+--- 3.7.24/usr/ikuai/include/route_rule.sh
++++ 3.7.25/usr/ikuai/include/route_rule.sh
+@@ -10,37 +10,57 @@
+ #route_rule_insert stream_ipport "$cmd"
+ route_rule_insert()
+ {
+-	if [ "$1"  -a "$2" ];then
+-		echo "$2" >>$ROUTE_RULE_DIR/route.d/$1
+-	fi
++	local rule_file="$ROUTE_RULE_DIR/route.d/$1"
++	shift
++	[ "$1" ] || return 1
++	local value
++	for value in "$@"; do
++		case "$value" in
++			*'|'*|*$'\n'*) return 1 ;;
++		esac
++	done
++	local IFS='|'
++	printf '%s\n' "$*" >> "$rule_file"
+ }
+ 
+ #route_rule_delete stream_ipport "$id"
+ route_rule_delete()
+ {
+-	if [ "$1"  -a "$2" ];then
+-		sed -i -r "/^(${2//,/|}) /d" $ROUTE_RULE_DIR/route.d/$1 
++	if [ "$1" -a "$2" ];then
++		local pattern="${2//,/|}"
++		sed -i -r "/^[^|]+\\|(${pattern})\\|/d" "$ROUTE_RULE_DIR/route.d/$1"
+ 	fi
+ }
+ 
+ #route_rule_commit stream_ipport
+ route_rule_commit()
+ {
+-	random_filename=$(date +%s%N).${RANDOM}
+-	cat $ROUTE_RULE_DIR/route.d/* > /tmp/$random_filename
+-	mv /tmp/$random_filename $ROUTE_RULE_DIR/root
++	local random_filename
++	random_filename=$(mktemp /tmp/route-rule.XXXXXX) || return 1
++	cat "$ROUTE_RULE_DIR"/route.d/* > "$random_filename"
++	mv "$random_filename" "$ROUTE_RULE_DIR/root"
+ }
+ 
+ route_rule_update()
+ {
+-	local __route_rule_target__=$1 __route_rule_iface__=$2
+-	while read name cmd iface param ;do
+-		[ ! "$cmd" ] && continue
+-		if [ "${__route_rule_target__:-ALL}" = "ALL" ];then
+-			if [ "$__route_rule_iface__" = "" -o "$__route_rule_iface__" = "${iface//\"}" ];then
+-				eval $cmd $iface $param >/dev/null 2>&1
+-			fi
+-		fi
+-	done < $ROUTE_RULE_DIR/root
++	local __route_rule_target__=${1:-ALL} __route_rule_iface__=${2:-}
++	[ -r "$ROUTE_RULE_DIR/root" ] || return 0
++	while IFS='|' read -r rule_type rule_id arg1 arg2 arg3 arg4; do
++		[ "$rule_type" ] || continue
++		[ "${__route_rule_target__:-ALL}" = "ALL" ] || continue
++		case "$rule_type" in
++			static4)
++				[ -z "$__route_rule_iface__" -o "$__route_rule_iface__" = "$arg1" ] || continue
++				iproute_add_static_route "$arg1" "$arg2" "$arg3" "$arg4" >/dev/null 2>&1
++				;;
++			static6)
++				[ -z "$__route_rule_iface__" -o "$__route_rule_iface__" = "$arg1" ] || continue
++				ip6route_add_static_route "$arg1" "$arg2" "$arg3" "$arg4" >/dev/null 2>&1
++				;;
++			stream_default)
++				[ -z "$__route_rule_iface__" ] || continue
++				ip route add default via "$arg1" table "$arg2" >/dev/null 2>&1
++				;;
++		esac
++	done < "$ROUTE_RULE_DIR/root"
+ }
+-
+--- 3.7.24/usr/ikuai/include/sqlite.sh
++++ 3.7.25/usr/ikuai/include/sqlite.sh
+@@ -4,6 +4,11 @@
+ #_ 表示任意一个字符
+ __SQL_ASYNC_DIR="/tmp/iktmp/async/sqlite"
+ 
++__sql_is_int()
++{
++	[[ "${1-}" =~ ^-?[0-9]+$ ]]
++}
++
+ sql_config_exec()
+ {
+ 	local SqlMsg
+@@ -22,43 +27,52 @@
+ #return rowid
+ sql_config_insert()
+ {
+-	local SqlMsg
+-	local is_async
++	local __sql_msg
++	local __sql_async_mode
+ 	if [ "$1" = "ASYNC" ];then
+-		is_async=true
++		__sql_async_mode=true
+ 		shift 1
+ 	fi
+ 
+-	local dbpath="$1" tbname="$2"
++	local __sql_dbpath="$1" __sql_tbname="$2"
+ 
+ 	if [ "$3" = "" ];then
+ 		[ "$IKDEBUG" = "1" ]&&echo "sql_config_insert db tabname key1:int key2:str"
+ 		return 1
+ 	fi
+ 
+-	local __key__  __val__
+-	for param in ${@:3} ;do
+-		__key__+="${__key__:+,}${param//:*}"
+-		if [ "${param//*:}" = "null" ];then
+-			__val__+="${__val__:+,}NULL"
+-		elif [ "${param//*:}" = "int" ];then
+-			__val__+="${__val__:+,}\${${param//:*}:-0}"
++	local __sql_key_list __sql_value_list __sql_param __sql_field __sql_type __sql_value
++	for __sql_param in ${@:3} ;do
++		__sql_field="${__sql_param%%:*}"
++		__sql_type="${__sql_param##*:}"
++		[[ "$__sql_field" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++		__sql_key_list+="${__sql_key_list:+,}$__sql_field"
++		if [ "$__sql_type" = "null" ];then
++			__sql_value_list+="${__sql_value_list:+,}NULL"
++		elif [ "$__sql_type" = "int" ];then
++			__sql_value="${!__sql_field-}"
++			[ -n "$__sql_value" ] || __sql_value=0
++			__sql_is_int "$__sql_value" || return 1
++			__sql_value_list+="${__sql_value_list:+,}$__sql_value"
++		elif [ "$__sql_type" = "str" ];then
++			__sql_value="${!__sql_field-}"
++			__sql_value="${__sql_value//\'/\'\'}"
++			__sql_value_list+="${__sql_value_list:+,}'$__sql_value'"
+ 		else
+-			__val__+="${__val__:+,}\\'\$${param//:*}\\'"
++			return 1
+ 		fi
+ 	done
+-	eval __val__=$__val__
+-
+-
+-	local sqlcmd="insert into $tbname($__key__) values($__val__);"
+-
+-	if [ "$is_async" = "true" ];then
+-		__sql_async "$dbpath" "$sqlcmd"
++
++
++	local __sql_cmd="insert into $__sql_tbname($__sql_key_list) values($__sql_value_list);"
++
++	if [ "$__sql_async_mode" = "true" ];then
++		__sql_async "$__sql_dbpath" "$__sql_cmd"
+ 		return 0
+ 	fi
+ 
+-	if SqlMsg=$(__sql_config_exec insert "$dbpath" "$sqlcmd" 2>&1);then
+-		[ "$SqlMsg" ]&& echo "$SqlMsg"
++	if __sql_msg=$(__sql_config_exec insert "$__sql_dbpath" "$__sql_cmd" 2>&1);then
++		[ "$__sql_msg" ]&& echo "$__sql_msg"
+ 		return 0
+ 	else
+ 		__sql_errmsg
+@@ -69,39 +83,48 @@
+ #sql_config_update db tabname "id=1 or name='123'" key1:int key2:str
+ sql_config_update()
+ {
+-	local SqlMsg
+-	local is_async
++	local __sql_msg
++	local __sql_async_mode
+ 	if [ "$1" = "ASYNC" ];then
+-		is_async=true
++		__sql_async_mode=true
+ 		shift 1
+ 	fi
+ 
+-	local dbpath="$1" tbname="$2" where="$3"
++	local __sql_dbpath="$1" __sql_tbname="$2" __sql_where="$3"
+ 	if [ "$4" = "" ];then
+ 		[ "$IKDEBUG" = "1" ]&&echo "sql_config_insert db tabname key1:int key2:str"
+ 		return 1
+ 	fi
+ 
+ 
+-	local __val__
+-	for param in ${@:4} ;do
+-		if [ "${param//*:}" = "null" ];then
+-			__val__+="${__val__:+,}${param//:*}=NULL"
+-		elif [ "${param//*:}" = "int" ];then
+-			__val__+="${__val__:+,}${param//:*}=\${${param//:*}:-0}"
++	local __sql_value_list __sql_param __sql_field __sql_type __sql_value
++	for __sql_param in ${@:4} ;do
++		__sql_field="${__sql_param%%:*}"
++		__sql_type="${__sql_param##*:}"
++		[[ "$__sql_field" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++		if [ "$__sql_type" = "null" ];then
++			__sql_value_list+="${__sql_value_list:+,}$__sql_field=NULL"
++		elif [ "$__sql_type" = "int" ];then
++			__sql_value="${!__sql_field-}"
++			[ -n "$__sql_value" ] || __sql_value=0
++			__sql_is_int "$__sql_value" || return 1
++			__sql_value_list+="${__sql_value_list:+,}$__sql_field=$__sql_value"
++		elif [ "$__sql_type" = "str" ];then
++			__sql_value="${!__sql_field-}"
++			__sql_value="${__sql_value//\'/\'\'}"
++			__sql_value_list+="${__sql_value_list:+,}$__sql_field='$__sql_value'"
+ 		else
+-			__val__+="${__val__:+,}${param//:*}=\\'\$${param//:*}\\'"
++			return 1
+ 		fi
+ 	done
+-	eval __val__=$__val__
+-
+-	local sqlcmd="update $tbname set $__val__ where $where;"
+-	if [ "$is_async" = "true" ];then
+-		__sql_async "$dbpath" "$sqlcmd"
++
++	local __sql_cmd="update $__sql_tbname set $__sql_value_list where $__sql_where;"
++	if [ "$__sql_async_mode" = "true" ];then
++		__sql_async "$__sql_dbpath" "$__sql_cmd"
+ 		return 0
+ 	fi
+ 
+-	if SqlMsg=$(__sql_config_exec exec "$dbpath" "$sqlcmd" 2>&1);then
++	if __sql_msg=$(__sql_config_exec exec "$__sql_dbpath" "$__sql_cmd" 2>&1);then
+ 		return 0
+ 	else
+ 		__sql_errmsg
+@@ -193,9 +216,10 @@
+ 
+ __filter_parser()
+ {
+-	local varname=$1
++	local varname=$1 var res
+ 	for((i=1;i<=256;i++));do
+-		res=$(eval echo \$$varname$i)
++		var="${varname}${i}"
++		res="${!var-}"
+ 		if [ ! "$res" ];then
+ 			break
+ 		fi
+@@ -308,10 +332,11 @@
+ local prefix
+ local ${4:-Null}
+ local sqlite3_busy_timeout=10000
++IK_SQL_CONFIG_SQL="$3" \
+ lua<<EOF
+ 	local typ      = "$1"
+ 	local dbfile   = [[$2]]
+-	local sql      = [[$3]]
++	local sql      = os.getenv("IK_SQL_CONFIG_SQL") or ""
+ 	local topology = ("$SQL_JSON_DUMP_TOPOLOGY" == "1")
+ 	local topo_key1 = "$SQL_JSON_TOPOLOGY_KEY1"
+ 	local topo_key2 = "$SQL_JSON_TOPOLOGY_KEY2"
+@@ -506,11 +531,19 @@
+ __sql_async()
+ {
+ 	local dbpath="$1" sqlcmd="$2"
+-	local tmpfile=$$.${RANDOM}
+-	if [ ! -e "$__SQL_ASYNC_DIR/${dbpath##*/}" ];then
+-		mkdir -p $__SQL_ASYNC_DIR/${dbpath##*/}
+-		ln -sf $dbpath $__SQL_ASYNC_DIR/${dbpath##*/}/.path
+-	fi
+-	echo "$sqlcmd" > $__SQL_ASYNC_DIR/${dbpath##*/}/.$tmpfile
+-	mv $__SQL_ASYNC_DIR/${dbpath##*/}/.$tmpfile $__SQL_ASYNC_DIR/${dbpath##*/}/$tmpfile
+-}
++	local dbdir="$__SQL_ASYNC_DIR/$(basename "$dbpath")"
++	local tmpfile finalfile
++	mkdir -p "$dbdir" || return 1
++	if [ ! -e "$dbdir/.path" ] && [ ! -L "$dbdir/.path" ];then
++		ln -s "$dbpath" "$dbdir/.path" 2>/dev/null || {
++			[ -e "$dbdir/.path" ] || [ -L "$dbdir/.path" ] || return 1
++		}
++	fi
++	tmpfile=$(mktemp "$dbdir/.sql.XXXXXX") || return 1
++	finalfile=$(basename "$tmpfile" | sed 's/^\.//')
++	if ! printf '%s\n' "$sqlcmd" > "$tmpfile";then
++		rm -f "$tmpfile"
++		return 1
++	fi
++	mv -f "$tmpfile" "$dbdir/$finalfile"
++}
+--- 3.7.24/usr/ikuai/include/urlcode.sh
++++ 3.7.25/usr/ikuai/include/urlcode.sh
+@@ -33,6 +33,46 @@
+ #解码
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo "${str//[\"\']}"
++	url_decode_noeval "$1"
+ }
++
++# 无 eval 的 URL 解码，保留解码后的原始内容。
++# 与当前 url_encode/url_decode 保持一致：不把 + 转为空格，只处理 %XX。
++url_decode_noeval_raw()
++{
++	local s="$1" out="" prefix hex ch
++
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		out+="$prefix"
++		s="${s#*%}"
++
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			out+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				out+="$ch"
++				s="${s:1}"
++			else
++				out+="%"
++			fi
++		fi
++	done
++
++	printf '%s\n' "$out$s"
++}
++
++# 无 eval 的 URL 解码，兼容旧 url_decode 行为：解码后删除单双引号。
++url_decode_noeval()
++{
++	local str
++	str="$(url_decode_noeval_raw "$1")"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
++}
+--- 3.7.24/usr/ikuai/include/wifi/apcli_gx2600.sh
++++ 3.7.25/usr/ikuai/include/wifi/apcli_gx2600.sh
+@@ -10,8 +10,31 @@
+ 
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo ${str//[\"\']}
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ apcli_terminate()
+--- 3.7.24/usr/ikuai/include/wifi/apcli_mac80211.sh
++++ 3.7.25/usr/ikuai/include/wifi/apcli_mac80211.sh
+@@ -1,8 +1,31 @@
+ #!/bin/bash
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo "${str//[\"\']}"
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ apcli_pause()
+--- 3.7.24/usr/ikuai/include/wifi/apcli_mediatek.sh
++++ 3.7.25/usr/ikuai/include/wifi/apcli_mediatek.sh
+@@ -3,8 +3,31 @@
+ 
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo ${str//[\"\']}
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ apcli_pause()
+--- 3.7.24/usr/ikuai/include/wifi/apcli_qcawifi.sh
++++ 3.7.25/usr/ikuai/include/wifi/apcli_qcawifi.sh
+@@ -2,8 +2,31 @@
+ 
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo "${str//[\"\']}"
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ apcli_pause()
+--- 3.7.24/usr/ikuai/include/wifi/mesh.sh
++++ 3.7.25/usr/ikuai/include/wifi/mesh.sh
+@@ -58,8 +58,31 @@
+ 
+ url_decode()
+ {	
+-	local str=$(eval echo $\'${1//%/\\x}\')
+-	echo "${str//[\"\']}"
++	local s="$1" str="" prefix hex ch
++	while [[ "$s" == *%* ]]; do
++		prefix="${s%%\%*}"
++		str+="$prefix"
++		s="${s#*%}"
++		hex="${s:0:2}"
++		if [[ "$hex" =~ ^[0-9A-Fa-f]{2}$ ]]; then
++			printf -v ch '%b' "\\x$hex"
++			str+="$ch"
++			s="${s:2}"
++		else
++			hex="${s:0:1}"
++			if [[ "$hex" =~ ^[0-9A-Fa-f]$ ]]; then
++				printf -v ch '%b' "\\x$hex"
++				str+="$ch"
++				s="${s:1}"
++			else
++				str+="%"
++			fi
++		fi
++	done
++	str+="$s"
++	str="${str//\"/}"
++	str="${str//\'/}"
++	printf '%s\n' "$str"
+ }
+ 
+ led_blink()
+@@ -1634,4 +1657,3 @@
+ reload)  mesh_reload ;;
+ *) $* ;;
+ esac
+-
+--- 3.7.24/usr/ikuai/include/wifi/qcaextend.sh
++++ 3.7.25/usr/ikuai/include/wifi/qcaextend.sh
+@@ -39,7 +39,16 @@
+ 
+ ikuai_env_init()
+ {
+-	eval $(awk '{if(substr($1,0,1) != "#")printf "IKREL_%s\n",$0 } ' /etc/release)
++	# /etc/release is data; only copy the four release flags consumed below.
++	local __release_file="${IK_RELEASE_FILE:-/etc/release}"
++	while IFS='=' read -r __release_key __release_value; do
++		case "$__release_key" in
++			WIFI_DRIVER) IKREL_WIFI_DRIVER="$__release_value" ;;
++			CURRENT_APMODE) IKREL_CURRENT_APMODE="$__release_value" ;;
++			EMBED_WIFI_TYPE) IKREL_EMBED_WIFI_TYPE="$__release_value" ;;
++			WIFI_IF_RPS) IKREL_WIFI_IF_RPS="$__release_value" ;;
++		esac
++	done < "$__release_file"
+ 
+ 	if [ "$IKREL_WIFI_DRIVER" = "qcawifi" ] ;then
+ 		IK_UCI_CONFIG_LOAD_HOOK=qsdk_config_load_wireless
+--- 3.7.24/usr/ikuai/script/ac_group.sh
++++ 3.7.25/usr/ikuai/script/ac_group.sh
+@@ -134,7 +134,7 @@
+ 
+ 	#advanced
+ 	sql_param+=" advanced:int advanced_5g:int advanced_d5g:int"
+-	sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++	sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 	sql_param+=" beacon_interval_5g:int beacon_txpower_5g:int rts_5g:int hwmode_5g:str"
+ 	sql_param+=" beacon_interval_d5g:int beacon_txpower_d5g:int rts_d5g:int hwmode_d5g:str"
+ 	#负载策略
+@@ -275,7 +275,7 @@
+ 
+ 	#advanced
+ 	sql_param+=" advanced:int advanced_5g:int advanced_d5g:int"
+-	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 	[ "$advanced_5g" = "1" ]&& sql_param+=" beacon_interval_5g:int beacon_txpower_5g:int rts_5g:int hwmode_5g:str"
+ 	[ "$advanced_d5g" = "1" ]&& sql_param+=" beacon_interval_d5g:int beacon_txpower_d5g:int rts_d5g:int hwmode_d5g:str"
+ 	#负载策略
+--- 3.7.24/usr/ikuai/script/ac_net_optimize.sh
++++ 3.7.25/usr/ikuai/script/ac_net_optimize.sh
+@@ -17,7 +17,8 @@
+ {
+ 	check_varl \
+ 		'mode == "0" or == "1" or == "2"' \
+-		'frequencies == "0" or == "1" or == "2" or == "3"'
++		'frequencies == "0" or == "1" or == "2" or == "3"' \
++		'apmac == "" or macs'
+ }
+ 
+ __start()
+@@ -34,11 +35,11 @@
+ 	echo "mode=$mode frequencies=$frequencies apmac=$apmac" > $AC_NET_CONF
+ 	touch $AC_NET_STATUS 
+ 	if [ "$frequencies" = "1" ]; then
+-		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=2g OPTIMIZE_AP_MACS=$apmac
++		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=2g OPTIMIZE_AP_MACS="$apmac"
+ 	elif [ "$frequencies" = "2" ]; then
+-		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=5g OPTIMIZE_AP_MACS=$apmac
++		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=5g OPTIMIZE_AP_MACS="$apmac"
+ 	else
+-		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=both OPTIMIZE_AP_MACS=$apmac
++		$IK_DIR_SCRIPT/ik_netoptimize.sh OPTIMIZE_RADIO=both OPTIMIZE_AP_MACS="$apmac"
+ 	fi
+ 	__get_result
+ 	echo 1 > $AC_NET_STATUS
+--- 3.7.24/usr/ikuai/script/ac_server.sh
++++ 3.7.25/usr/ikuai/script/ac_server.sh
+@@ -394,7 +394,7 @@
+ 		[ "$enc12" = "8021x" ] && sql_param+=" auth_server12:str auth_port12:int acct_secret12:str slave_auth12:int slave_auth_server12:str slave_auth_port12:int slave_acct_secret12:str"
+ 		sql_param+=" qos_atf_d5g:int"
+ 		#advanced
+-		sql_param+=" advanced:int beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++		sql_param+=" advanced:int beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 		sql_param+=" advanced_5g:int beacon_interval_5g:int beacon_txpower_5g:int rts_5g:int hwmode_5g:str"
+ 		sql_param+=" advanced_d5g:int beacon_interval_d5g:int beacon_txpower_d5g:int rts_d5g:int hwmode_d5g:str"
+ 		#负载策略
+@@ -584,7 +584,7 @@
+ 
+ 	#advanced
+ 	sql_param+=" advanced:int advanced_5g:int advanced_d5g:int"
+-	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 	[ "$advanced_5g" = "1" ]&& sql_param+=" beacon_interval_5g:int beacon_txpower_5g:int rts_5g:int hwmode_5g:str"
+ 	[ "$advanced_d5g" = "1" ]&& sql_param+=" beacon_interval_d5g:int beacon_txpower_d5g:int rts_d5g:int hwmode_d5g:str"
+ 	#负载策略
+@@ -713,7 +713,7 @@
+ 
+ 	#advanced
+ 	sql_param+=" advanced:int advanced_5g:int advanced_d5g:int"
+-	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:text"
++	[ "$advanced" = "1" ]&& sql_param+=" beacon_interval:int beacon_txpower:int rts:int hwmode:str mgmt_rate:int dis_legacy:str"
+ 	[ "$advanced_5g" = "1" ]&& sql_param+=" beacon_interval_5g:int beacon_txpower_5g:int rts_5g:int hwmode_5g:str"
+ 	[ "$advanced_d5g" = "1" ]&& sql_param+=" beacon_interval_d5g:int beacon_txpower_d5g:int rts_d5g:int hwmode_d5g:str"
+ 	#负载策略
+--- 3.7.24/usr/ikuai/script/acl.sh
++++ 3.7.25/usr/ikuai/script/acl.sh
+@@ -315,6 +315,9 @@
+ 	if [ "$code" != "" ];then
+ 		for code_one in ${code//,/ } ;do
+ 			local code_num=""
++			if [[ ! "$code_one" =~ ^(0x[0-9a-fA-F]+|[0-9]+)$ ]]; then
++				return 1
++			fi
+ 			code_num=$(($code_one))
+ 			code_all=${code_all:+$code_all,}$code_num
+ 		done
+--- 3.7.24/usr/ikuai/script/audit_url_log.sh
++++ 3.7.25/usr/ikuai/script/audit_url_log.sh
+@@ -156,12 +156,12 @@
+ 		return 1
+         fi 
+ 
+-	awk -v keywords="$keywords" -v start_line=$start_line -v stop_line=$stop_line -v total=0 -v skip_num=0 '
++	local __index_result
++	__index_result=$(awk -v keywords="$keywords" -v start_line="$start_line" -v stop_line="$stop_line" -v total=0 -v skip_num=0 '
+ 	FILENAME!=SKIP_FILE{
+ 		if(key_type==$1||key_type==""){
+ 			if(keywords==$2){
+ 				if(key_type=="")key_type=$1
+-				
+ 				total+=$3
+ 				if(total>=start_line){
+ 					files=files" "FILENAME
+@@ -174,15 +174,18 @@
+ 		}
+ 	}
+ 	END{
+-		printf "key_type=%s skip_num=%s index_files=\x22%s\x22\n",key_type,skip_num,files
+-	}' $all_index_file
++		printf "%s\t%s\t%s\n",key_type,skip_num,files
++	}' $all_index_file)
++	IFS=$'\t' read -r key_type skip_num index_files <<EOF
++$__index_result
++EOF
+ }
+ 
+ #根据__url_get_index_file返回的索引结果，进行二次查询,并返回json
+ __url_get_result()
+ {
+ 	#返回变量自动赋值 skip_num= index_files=
+-	eval declare $(__url_get_index_file)
++	__url_get_index_file || true
+ 	
+ 	if [ -n "$index_files" ];then
+ 		cd $STREAM_PATH
+@@ -218,4 +221,3 @@
+ 		echo "[]"
+ 	fi
+ }
+-
+--- 3.7.24/usr/ikuai/script/dprotos.sh
++++ 3.7.25/usr/ikuai/script/dprotos.sh
+@@ -32,7 +32,7 @@
+ 		return 1
+ 	fi
+ 
+-	local sql_param="enabled:str comment:srt name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
++	local sql_param="enabled:str comment:str name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
+ 	if  SqlMsg=$(sql_config_insert $IK_DB_CONFIG dprotos $sql_param) ;then
+ 		parse_proto
+ 		local id=$SqlMsg
+@@ -95,7 +95,7 @@
+ 	fi
+ 	local $res
+ 
+-	local sql_param="enabled:str comment:srt name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
++	local sql_param="enabled:str comment:str name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
+ 	if  SqlMsg=$(sql_config_update $IK_DB_CONFIG dprotos "id=$id" $sql_param) ;then
+ 		if ! NewOldVarl enabled name src_addr dst_addr protocol src_port dst_port class appid ;then
+ 			parse_proto
+--- 3.7.24/usr/ikuai/script/dprotos_l7.sh
++++ 3.7.25/usr/ikuai/script/dprotos_l7.sh
+@@ -25,7 +25,7 @@
+ 		return 1
+ 	fi
+ 
+-	local sql_param="enabled:str comment:srt name:str class:int appid:int rule:str"
++	local sql_param="enabled:str comment:str name:str class:int appid:int rule:str"
+ 	if  SqlMsg=$(sql_config_insert $IK_DB_CONFIG dprotos_l7 $sql_param) ;then
+ 		local id=$SqlMsg
+ 		__load_app_rule >/dev/null 2>&1 &
+@@ -70,7 +70,7 @@
+ 		return 1
+ 	fi
+ 
+-	local sql_param="enabled:str comment:srt name:str class:int appid:int rule:str"
++	local sql_param="enabled:str comment:str name:str class:int appid:int rule:str"
+ 	if  SqlMsg=$(sql_config_update $IK_DB_CONFIG dprotos_l7 "id=$id" $sql_param) ;then
+ 		local id=$SqlMsg
+ 		__load_app_rule >/dev/null 2>&1 &
+--- 3.7.24/usr/ikuai/script/ik_event_imlog.sh
++++ 3.7.25/usr/ikuai/script/ik_event_imlog.sh
+@@ -1,4 +1,5 @@
+ #!/bin/bash /etc/ikcommon
++Include urlcode.sh
+ I18nload im_log.json
+ im_event_table=im_event
+ WW_LINE=/tmp/ww_online
+@@ -50,12 +51,12 @@
+ 
+ 		if [ "$insert_in" = "yes" ];then 	
+ 			comment=`awk -v mac=$mac '{if($2==mac)print $3}' /tmp/mac_comment`
+-			tmp=${account//%/\\x}
+-			code_type=`eval echo $\'$tmp\' | enca -L zh_CN | awk '{print $NF}' ` 
++			decoded_account=$(url_decode_noeval_raw "$account")
++			code_type=$(printf '%s' "$decoded_account" | enca -L zh_CN | awk '{print $NF}')
+ 			if [ "$code_type" = "Big5" ] || [ "$code_type" = "GB2312" ];then
+-				username=`eval echo $\'$tmp\'|iconv -f GBK -t UTF-8 -c`
++				username=$(printf '%s' "$decoded_account" | iconv -f GBK -t UTF-8 -c)
+ 			elif [ "$code_type" = "encoding" ];then
+-				username=`eval echo $\'$tmp\' `
++				username=$decoded_account
+ 			else
+ 				username=$account
+ 			fi
+@@ -71,4 +72,3 @@
+ 	echo "insert into user_id_mac(id,id_name,timestamp,id_num,ip,mac) \
+ 		values(NULL,'$id_name',$(date +%s),'$id_num','$ip','$mac');"  >> /tmp/ik_event_aquisition.conf
+ }
+-
+--- 3.7.24/usr/ikuai/script/ik_netoptimize.sh
++++ 3.7.25/usr/ikuai/script/ik_netoptimize.sh
+@@ -62,7 +62,33 @@
+ 	fi
+ 	echo $progress > /tmp/iktmp/neighbor_file_progress_bar
+ }
+-eval $@
++
++for option in "$@"; do
++	case "$option" in
++		OPTIMIZE_RADIO=*)
++			OPTIMIZE_RADIO=${option#*=}
++			;;
++		OPTIMIZE_AP_MACS=*)
++			OPTIMIZE_AP_MACS=${option#*=}
++			;;
++		OPTIMIZE_FOUR_CHANNEL=0|OPTIMIZE_FOUR_CHANNEL=1)
++			OPTIMIZE_FOUR_CHANNEL=${option#*=}
++			;;
++		*)
++			printf 'invalid option: %s\n' "$option" >&2
++			exit 1
++			;;
++	esac
++done
++
++case "$OPTIMIZE_RADIO" in
++	2g|5g|both) ;;
++	*)
++		printf 'invalid OPTIMIZE_RADIO: %s\n' "$OPTIMIZE_RADIO" >&2
++		exit 1
++		;;
++esac
++
+ EXTRAFLAGS_2G=""
+ if [ "$OPTIMIZE_FOUR_CHANNEL" = "1" ]; then
+ 	EXTRAFLAGS_2G=-x
+--- 3.7.24/usr/ikuai/script/ipv6.sh
++++ 3.7.25/usr/ikuai/script/ipv6.sh
+@@ -12,6 +12,11 @@
+ UNLOCK_ODHCPD="unLock odhcpd"
+ 
+ PKG_PATH="/etc/mnt/.ipv6_multi"
++
++__ipv6_safe_ifname()
++{
++	[[ "${1-}" =~ ^[A-Za-z0-9_.:-]{1,15}$ ]]
++}
+ 
+ boot()
+ {
+@@ -106,8 +111,10 @@
+ 	while read config; do
+ 		[ "$config" ] || continue
+ 		local $config
+-		echo "$config" >$IK_DIR_CACHE/config/ipv6_wan_config.${interface}.tmp
+-		mv $IK_DIR_CACHE/config/ipv6_wan_config.${interface}.tmp $IK_DIR_CACHE/config/ipv6_wan_config.$interface
++		__ipv6_safe_ifname "$interface" || continue
++		local cache_file="$IK_DIR_CACHE/config/ipv6_wan_config.$interface"
++		printf '%s\n' "$config" > "$cache_file.tmp"
++		mv "$cache_file.tmp" "$cache_file"
+ 	done
+ }
+ 
+@@ -116,16 +123,19 @@
+ 	local id=$1
+ 	sql_config_get_list $IK_DB_CONFIG "select * from ipv6_lan_config ${id:+ where id=$id}" | \
+ 	while read config; do
+-		local $config	
+-		echo "$config" >$IK_DIR_CACHE/config/ipv6_lan_config.${interface}.tmp
+-		mv $IK_DIR_CACHE/config/ipv6_lan_config.${interface}.tmp $IK_DIR_CACHE/config/ipv6_lan_config.$interface
++		local $config
++		__ipv6_safe_ifname "$interface" || continue
++		local cache_file="$IK_DIR_CACHE/config/ipv6_lan_config.$interface"
++		printf '%s\n' "$config" > "$cache_file.tmp"
++		mv "$cache_file.tmp" "$cache_file"
+ 	done
+ }
+ 
+ __delete_lan_config_to_cache()
+ {
+ 	local interface=$1
+-	rm -f $IK_DIR_CACHE/config/ipv6_lan_config.$interface
++	__ipv6_safe_ifname "$interface" || return 1
++	rm -f "$IK_DIR_CACHE/config/ipv6_lan_config.$interface"
+ }
+ 
+ __sysctl_ipv6_enable()
+@@ -2272,7 +2282,15 @@
+ 	local ip6addr = {}
+ 	local linkaddr = {}
+ 
++	local function safe_iface(iface)
++		return type(iface) == "string" and #iface >= 1 and #iface <= 15
++			and iface:match("^[%w_.:%-]+$") ~= nil
++	end
++
+ 	function get_lan_v6addr(iface)
++		if not safe_iface(iface) then
++			return
++		end
+ 		local ipv6_addr=""
+ 		local link_addr=""
+ 		local cmd=string.format("ip -6 addr show dev %s 2>/dev/null", iface)
+@@ -2452,4 +2470,3 @@
+ 	local $(sql_config_get_list $DHCPV6_LEASEFILE "select count() as client_total,expires-strftime('%s') timeout from leases $__filter")
+ 	json_append  __json_result__ client_total:int
+ }
+-
+--- 3.7.24/usr/ikuai/script/mac_app.sh
++++ 3.7.25/usr/ikuai/script/mac_app.sh
+@@ -96,11 +96,14 @@
+ 
+ #mac= rule=base64
+ batch_add() {
++	if [[ ! "$rule" =~ ^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$ ]]; then
++		return 1
++	fi
++
+ 	if [ "$mac" ]; then
+ 		__exec_rule_clean
+ 		sqlite3 $IK_DB_CONFIG "delete from mac_app where mac='$mac'"
+ 	fi
+-
+ 	local filename="/tmp/.mac_app_batch.$$"
+ 	echo "BEGIN TRANSACTION;" > $filename
+ 	local tmpfile=$(echo $rule | base64 -d)
+--- 3.7.24/usr/ikuai/script/monitor_lanip.sh
++++ 3.7.25/usr/ikuai/script/monitor_lanip.sh
+@@ -282,13 +282,20 @@
+ 		language="en"
+ 	fi
+ 	if [ "$ip" ]; then
+-		local conntrack_cmd="conntrack -L -s $ip ;conntrack -L -r $ip"
+-	else
+-		local conntrack_cmd="conntrack -L"
++		case "$ip" in
++			*[!0-9.]* ) return 1 ;;
++		esac
+ 	fi
+ 
+ 	appid_conn=$(echo -n "["
+-	( eval $conntrack_cmd ) 2>/dev/null |sort -k1 |gawk -v ip=$ip -v json="$json" -v proto_list="$proto_list" -v language="$language" '
++	{
++		if [ "$ip" ]; then
++			conntrack -L -s "$ip"
++			conntrack -L -r "$ip"
++		else
++			conntrack -L
++		fi
++	} 2>/dev/null |sort -k1 |gawk -v ip="$ip" -v json="$json" -v proto_list="$proto_list" -v language="$language" '
+ 	BEGIN {
+ 		while(getline<proto_list) {
+ 			appid_name[$2]=$1
+--- 3.7.24/usr/ikuai/script/openvpn-client.sh
++++ 3.7.25/usr/ikuai/script/openvpn-client.sh
+@@ -81,7 +81,7 @@
+ 
+ 	local sql_param
+ 	sql_param+=" name:str remote_addr:str remote_port:str interface:str proto:str dev_type:str enabled:str comment:str method:int tls_auth:str"
+-	sql_param+=" username:str password:str cipher:str comp_lzo:str tun_mtu:str redirect_gateway:str accept_push_route:str ca:str cert:str key:str route extra_config:str"
++	sql_param+=" username:str password:str cipher:str comp_lzo:str tun_mtu:str redirect_gateway:str accept_push_route:str ca:str cert:str key:str route:str extra_config:str"
+ 	sql_param+=" timing_rst_switch:int timing_rst_week:str timing_rst_time:str check_link_mode:int check_link_host:str"
+ 
+ 	if SqlMsg=$(sql_config_insert $IK_DB_CONFIG openvpn_client $sql_param); then
+--- 3.7.24/usr/ikuai/script/pppoe_server.sh
++++ 3.7.25/usr/ikuai/script/pppoe_server.sh
+@@ -149,8 +149,6 @@
+ 		Append conf_poe "$LINE_N" "share_deny=$share_deny"
+ 		echo "$conf_poe" >/tmp/iktmp/pppoe-server.conf
+ 
+-		[ "$bind_vlan" = "1" ] && SUPPORT_VLAN="-V"
+-		[ -n "$server_name" ] && SNAME="-S $server_name -C $server_name"
+ 		ipset -F Linux_pppoe_default
+ 		
+ 		#使用这个选项时,lcp-echo 检测掉线时, 还会检测host_stat列表是否存在
+@@ -177,7 +175,6 @@
+ 
+ 			rm -f /etc/api/pppoeradius.ini
+ 		elif [ "$authmode" = "3" ] ;then
+-			radius_param="-E"
+ 			#Acct-Interim-Intelval 下发属性，记账包间隔时间长度
+ 
+ 			Append opts_poe "$LINE_N" "ipparam radius"
+@@ -249,10 +246,6 @@
+ 
+ 		num=0
+ 
+-		if [ "$force_verify_name" = "1" ];then
+-			__force_param="-F"
+-		fi
+-
+ 		for pools in ${addr_pool//,/ };do
+ 			num=$((num+1))
+ 			ifname=`echo $interface|awk -F, '{print $'$num'}'`
+@@ -267,7 +260,8 @@
+ 				if [  "$ip_num" -le 65534 ] ;then
+ 					Append start_ifnames " " "$ifname"
+ 					echo $ifname >> /tmp/iktmp/pppoe-server.status
+-					declare $ifname="/usr/sbin/pppoe-server -I $ifname $SNAME -L ${server_ip} -R $start_ip -N $ip_num -k -u $SUPPORT_VLAN $radius_param -O /tmp/iktmp/options.pppoed $__force_param"
++					pppoe_start_ips["$ifname"]="$start_ip"
++					pppoe_ip_nums["$ifname"]="$ip_num"
+ 				else
+ 					logger -t pppoe-server "$(Autoiecho pppoe ipnums_err $ifname)"
+ 				fi
+@@ -311,22 +305,33 @@
+ 
+ check_server_start() {
+ 	PS=$(ps)
++	local -a new_cmd
++	local new_cmd_text
+ 	for ifname in $start_ifnames ;do
+-		new_cmd=$(eval echo \"\$$ifname\")
++		new_cmd=(/usr/sbin/pppoe-server -I "$ifname")
++		if [ -n "$server_name" ]; then
++			new_cmd+=(-S "$server_name" -C "$server_name")
++		fi
++		new_cmd+=(-L "$server_ip" -R "${pppoe_start_ips[$ifname]}" -N "${pppoe_ip_nums[$ifname]}" -k -u)
++		[ "$bind_vlan" = "1" ] && new_cmd+=(-V)
++		[ "$authmode" = "3" ] && new_cmd+=(-E)
++		new_cmd+=(-O /tmp/iktmp/options.pppoed)
++		[ "$force_verify_name" = "1" ] && new_cmd+=(-F)
++		printf -v new_cmd_text '%q ' "${new_cmd[@]}"
+ 		if [ -e /tmp/iktmp/pppoe-server/$ifname ];then
+ 			old_cmd=$(cat /tmp/iktmp/pppoe-server/$ifname)
+ 			old_pid=$(echo "$PS" |awk '$0~/usr\/sbin\/pppoe-server .* '$ifname' /{print $1}')
+-			if [ "$new_cmd" != "$old_cmd" ];then
++			if [ "$new_cmd_text" != "$old_cmd" ];then
+ 				[ -n "$old_pid" ] &&  kill $old_pid
+-				eval $new_cmd
++				"${new_cmd[@]}"
+ 			else
+-				[ "$old_pid" = "" ] && eval $new_cmd
++				[ "$old_pid" = "" ] && "${new_cmd[@]}"
+ 			fi
+ 		else
+-			eval $new_cmd
+-		fi
+-
+-		echo "$new_cmd" > /tmp/iktmp/pppoe-server-tmp/$ifname
++			"${new_cmd[@]}"
++		fi
++
++		echo "$new_cmd_text" > /tmp/iktmp/pppoe-server-tmp/$ifname
+ 		rm -f /tmp/iktmp/pppoe-server/$ifname
+ 	done
+ 
+--- 3.7.24/usr/ikuai/script/rc
++++ 3.7.25/usr/ikuai/script/rc
+@@ -202,6 +202,110 @@
+ clean_temp_webuser()
+ {
+ 	sqlite3 $IK_DB_CONFIG "delete from webuser where id == 0; delete from usergroup where id == 0;"
++}
++
++# Remove rows containing shell IFS expansion markers before any feature script
++# loads configuration from the database.  This is a startup safety net for a
++# tampered database; individual feature scripts must still avoid eval.
++sanitize_config_db_ifs()
++{
++	local config_db="$IK_DB_CONFIG"
++	local wecom_db="${IK_DB_WECOM:-/etc/mnt/ikuai/wecom.db}"
++	local wpa_ppsk_db="${IK_AC_PSK_DB:-/etc/mnt/ikuai/wpa_ppsk.db}"
++	local docker_db="${IK_DB_DOCKER:-/etc/mnt/ikuai/docker.db}"
++	local max_db_size=$((1 * 1024 * 1024))
++	local bad_marker='${IFS}'
++	local log_file="$IK_DIR_TMP/bootlog/db_sanitize.log"
++	local db db_name db_size line table id deleted delete_output
++	local schema_output schema_line cid column rest checked_tables id_tables
++	local insert_re_quoted insert_re_plain
++	local delete_sql matched_rows deleted_rows skipped_lines
++
++	mkdir -p "${log_file%/*}"
++	: > "$log_file"
++
++	insert_re_quoted='^INSERT[[:space:]]+INTO[[:space:]]+"([A-Za-z_][A-Za-z0-9_]*)"[[:space:]]+VALUES\(([0-9]+),'
++	insert_re_plain='^INSERT[[:space:]]+INTO[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]+VALUES\(([0-9]+),'
++
++	for db in "$config_db" "$wecom_db" "$wpa_ppsk_db" "$docker_db"; do
++		db_name=${db##*/}
++		if [ ! -r "$db" ]; then
++			printf 'database=%s skipped=unreadable\n' "$db_name" >> "$log_file"
++			continue
++		fi
++
++		db_size=$(stat -c %s "$db" 2>/dev/null) || \
++			db_size=$(stat -f %z "$db" 2>/dev/null) || {
++			printf 'database=%s skipped=stat_failed\n' "$db_name" >> "$log_file"
++			continue
++		}
++		if [ "$db_size" -ge "$max_db_size" ]; then
++			printf 'database=%s size=%s skipped=size_limit max_size=%s\n' \
++				"$db_name" "$db_size" "$max_db_size" >> "$log_file"
++			continue
++		fi
++
++		delete_sql="BEGIN IMMEDIATE;"
++		matched_rows=0
++		deleted_rows=0
++		skipped_lines=0
++		checked_tables=""
++		id_tables=""
++		while IFS= read -r line; do
++			if [[ "$line" =~ $insert_re_quoted ]]; then
++				table=${BASH_REMATCH[1]}
++				id=${BASH_REMATCH[2]}
++			elif [[ "$line" =~ $insert_re_plain ]]; then
++				table=${BASH_REMATCH[1]}
++				id=${BASH_REMATCH[2]}
++			else
++				skipped_lines=$((skipped_lines + 1))
++				continue
++			fi
++
++			case "|$checked_tables|" in
++				*"|$table|"*) ;;
++				*)
++					checked_tables="${checked_tables:+$checked_tables|}$table"
++					schema_output=$(sqlite3 -batch "$db" \
++						"PRAGMA table_info(\"$table\");" 2>>"$log_file") || true
++					schema_line=${schema_output%%$'\n'*}
++					IFS='|' read -r cid column rest <<< "$schema_line"
++					[ "$cid" = "0" -a "$column" = "id" ] && \
++						id_tables="${id_tables:+$id_tables|}$table"
++					;;
++			esac
++			case "|$id_tables|" in
++				*"|$table|"*) ;;
++				*)
++					skipped_lines=$((skipped_lines + 1))
++					continue
++					;;
++			esac
++
++			delete_sql+=$'\n'"DELETE FROM \"$table\" WHERE id = $id;"
++			delete_sql+=$'\n'"SELECT '$table|$id|' || changes();"
++			matched_rows=$((matched_rows + 1))
++		done < <(nice -n 19 sqlite3 -batch "$db" ".dump" 2>>"$log_file" | \
++			LC_ALL=C nice -n 19 grep -F "$bad_marker")
++
++		if [ "$matched_rows" -gt 0 ]; then
++			delete_sql+=$'\nCOMMIT;'
++			delete_output=$(sqlite3 -batch -bail -cmd ".timeout 5000" "$db" \
++				<<< "$delete_sql" 2>>"$log_file") || continue
++			while IFS='|' read -r table id deleted; do
++				[[ "$deleted" =~ ^[0-9]+$ ]] || continue
++				deleted_rows=$((deleted_rows + deleted))
++				printf 'database=%s deleted table=%s id=%s rows=%s\n' \
++					"$db_name" "$table" "$id" "$deleted" >> "$log_file"
++			done <<< "$delete_output"
++		fi
++
++		printf 'database=%s size=%s matched_rows=%s deleted_rows=%s skipped_lines=%s marker=%s\n' \
++			"$db_name" "$db_size" "$matched_rows" "$deleted_rows" \
++			"$skipped_lines" "$bad_marker" >> "$log_file"
++	done
++	return 0
+ }
+ 
+ boot_for_apmode()
+@@ -277,6 +381,8 @@
+ 
+ 	lcd_init
+ 	clean_temp_webuser
++	#联网更新前加载与绑定节点匹配的内置服务器地址
++	$IK_DIR_SCRIPT/utils/update_hosts.sh init >/dev/null 2>&1
+ 	start_ikuai_services
+ 	start_remote_services
+ 
+--- 3.7.24/usr/ikuai/script/send_log.sh
++++ 3.7.25/usr/ikuai/script/send_log.sh
+@@ -14,7 +14,7 @@
+         fi
+         local $res
+ 
+-	local sql_param="host:str server:str port:int protocol:string send_flag:int open_all:int open_url:int open_im:int open_nat:int open_iktimerd_ac:int open_pppauth:int open_offline:int open_dhcp:int open_arp:int open_pppd:int open_ddns:int open_opt:int open_sys:int open_dns:int expired:int delimiter:int enabled:str"
++	local sql_param="host:str server:str port:int protocol:str send_flag:int open_all:int open_url:int open_im:int open_nat:int open_iktimerd_ac:int open_pppauth:int open_offline:int open_dhcp:int open_arp:int open_pppd:int open_ddns:int open_opt:int open_sys:int open_dns:int expired:int delimiter:int enabled:str"
+ 
+ 	if SqlMsg=$(sql_config_update $IK_DB_CONFIG syslog_server "id=1" $sql_param) ;then
+ 		if ! NewOldVarl host server port protocol send_flag open_all open_url open_im open_nat open_iktimerd_ac open_pppauth open_offline open_dhcp open_arp open_pppd open_ddns open_opt open_sys open_dns expired delimiter enabled; then
+--- 3.7.24/usr/ikuai/script/static_rt.sh
++++ 3.7.25/usr/ikuai/script/static_rt.sh
+@@ -52,12 +52,12 @@
+ __exec_rule_add()
+ {
+ 	if [ "$ip_type" = "6" ]; then
+-		local route_cmd="ip6route_add_static_route \"$interface\" \"$gateway\" \"$dst_addr\" \"${prio:-1}\""
+-	else
+-		local route_cmd="iproute_add_static_route \"$interface\" \"$gateway\" \"$dst_addr/$netmask\" \"${prio:-1}\""
+-	fi
+-	eval $route_cmd
+-	route_rule_insert static_rt "$id $route_cmd"
++		ip6route_add_static_route "$interface" "$gateway" "$dst_addr" "${prio:-1}"
++		route_rule_insert static_rt static6 "$id" "$interface" "$gateway" "$dst_addr" "${prio:-1}"
++	else
++		iproute_add_static_route "$interface" "$gateway" "$dst_addr/$netmask" "${prio:-1}"
++		route_rule_insert static_rt static4 "$id" "$interface" "$gateway" "$dst_addr/$netmask" "${prio:-1}"
++	fi
+ 
+ 	if [ "$ip_type" = "6" ]; then
+ 		return
+--- 3.7.24/usr/ikuai/script/stream_ipport.sh
++++ 3.7.25/usr/ikuai/script/stream_ipport.sh
+@@ -91,9 +91,8 @@
+ 		connmark_id=$((IPT_CONNMARK_STREAM_IPPORT+auto_get_id))
+ 		connmark_ids="${connmark_id}"
+ 		ip rule add from all fwmark $mark_ids table $mark_ids prio 15000
+-		local route_cmd="ip route add default via $nexthop table $mark_ids"
+-		$route_cmd
+-		route_rule_insert stream_ipport "$id $route_cmd"
++		ip route add default via "$nexthop" table "$mark_ids"
++		route_rule_insert stream_ipport stream_default "$id" "$nexthop" "$mark_ids"
+ 		local IFNAMES=""
+ 		local BAND_FLAGS=""
+ 		local MODE_FLAGS=""
+--- 3.7.24/usr/ikuai/script/url_black.sh
++++ 3.7.25/usr/ikuai/script/url_black.sh
+@@ -34,7 +34,7 @@
+ 		name: \"black_white_domain\"
+ 		action: $Action
+ 		orig_host_url: \"Null\"
+-		$(for host in ${domain//,/ };do echo "mul_hosts: \"$(url_decode "${host//./\\\\\\.}")\"" ;done)
++		$(for host in ${domain//,/ };do echo "mul_hosts: \"$(url_decode "${host//./\\\\.}")\"" ;done)
+ 		$src_ipset
+ 		match_method: REGULAR_EXPRESSION
+ 		$date_range
+--- 3.7.24/usr/ikuai/script/utils/ap_load.sh
++++ 3.7.25/usr/ikuai/script/utils/ap_load.sh
+@@ -303,11 +303,12 @@
+ }
+ 
+ __KeyVal() {
+-	local k x;
+-	for k in ${@} ;do
+-		x+="$k=\$$k "
++	local __keyval_name __keyval_value
++	for __keyval_name in "$@"; do
++		[[ "$__keyval_name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || return 1
++		__keyval_value="${!__keyval_name-}"
++		printf '%s=%q\n' "$__keyval_name" "$__keyval_value"
+ 	done
+-	eval "printf '%s\n' $x"
+ }
+ 
+ __mesh()
+--- 3.7.24/usr/ikuai/script/utils/async.lua
++++ 3.7.25/usr/ikuai/script/utils/async.lua
+@@ -26,31 +26,40 @@
+ 	return false
+ end
+ 
++local function is_safe_name(name)
++	return type(name) == "string" and
++		string.match(name, "^[A-Za-z0-9][A-Za-z0-9._-]*$") ~= nil
++end
++
+ function sqlite_sync()
+ 	local f = io.popen("ls " .. SQL_ASYNC_DIR)
+ 	if f then 
+ 		for db in f:lines() do
+-			local ok
+-			local ff = io.popen("ls " .. SQL_ASYNC_DIR .. db)
+-			if not ff then break end
++			if is_safe_name(db) then
++				local ok
++				local ff = io.popen("ls " .. SQL_ASYNC_DIR .. db)
++				if not ff then break end
+ 
+-			for file in ff:lines() do
+-				local _file = string.format("%s%s/%s",SQL_ASYNC_DIR,db,file)
+-				if not ok then
+-					ikL_writefile("PRAGMA foreign_keys=OFF;BEGIN TRANSACTION;\n", SQL_ASYNC_BUF)
+-					ok = true
++				for file in ff:lines() do
++					if is_safe_name(file) then
++						local _file = string.format("%s%s/%s",SQL_ASYNC_DIR,db,file)
++						if not ok then
++							ikL_writefile("PRAGMA foreign_keys=OFF;BEGIN TRANSACTION;\n", SQL_ASYNC_BUF)
++							ok = true
++						end
++						local cmd = string.format("cat %s >> %s", _file, SQL_ASYNC_BUF)
++						os.execute(cmd)
++						os.remove(_file)
++					end
+ 				end
+-				local cmd = string.format("cat %s >> %s", _file, SQL_ASYNC_BUF)
+-				os.execute(cmd)
+-				os.remove(_file)
+-			end
+-			ff:close()
++				ff:close()
+ 
+-			if ok then
+-				ikL_writefile("COMMIT;\n", SQL_ASYNC_BUF, "a+")
+-				local cmd = string.format("sqlite3 %s/%s/.path < %s", SQL_ASYNC_DIR, db, SQL_ASYNC_BUF)
+-				os.execute(cmd)
+-				os.remove(SQL_ASYNC_BUF)
++				if ok then
++					ikL_writefile("COMMIT;\n", SQL_ASYNC_BUF, "a+")
++					local cmd = string.format("sqlite3 %s/%s/.path < %s", SQL_ASYNC_DIR, db, SQL_ASYNC_BUF)
++					os.execute(cmd)
++					os.remove(SQL_ASYNC_BUF)
++				end
+ 			end
+ 		end
+ 		f:close()
+@@ -80,4 +89,3 @@
+ 	pcall(sqlite_sync)
+ 	C.sleep(2)
+ end
+-
+--- 3.7.24/usr/ikuai/script/utils/cloud_switch.lua
++++ 3.7.25/usr/ikuai/script/utils/cloud_switch.lua
+@@ -2,6 +2,7 @@
+ 
+ local cjson = require "cjson"
+ local sqlite3 = require "lsqlite3"
++local string_check = require "iklua.string.check"
+ 
+ local SWITCH_DB = "/etc/log/switch.db"
+ local topology_filename = "/etc/log/cloud_switch/topology"
+@@ -35,6 +36,41 @@
+ local gconf_one = {}
+ local oidset = {}
+ 
++local function shell_quote(value)
++	return "'" .. tostring(value or ""):gsub("'", "'\\''") .. "'"
++end
++
++local function valid_oid(value)
++	if type(value) ~= "string" then
++		return false
++	end
++	if value:sub(1, 1) == "." then
++		value = value:sub(2)
++	end
++	if value == "" or value:sub(1, 1) == "."
++		or value:sub(-1) == "." or value:find("..", 1, true) then
++		return false
++	end
++	local count = 0
++	for part in value:gmatch("[^.]+") do
++		if not part:match("^%d+$") then
++			return false
++		end
++		count = count + 1
++	end
++	return count > 0
++end
++
++local function valid_ip(value)
++	return type(value) == "string" and not value:find("/", 1, true)
++		and (string_check.ip(value) or string_check.ipv6(value))
++end
++
++local function valid_mac(value)
++	return type(value) == "string"
++		and value:match("^%x%x:%x%x:%x%x:%x%x:%x%x:%x%x$") ~= nil
++end
++
+ --[[改变lldp_table变量表在oidset_init中动态初始化
+     不改变原有流程的基础上，重新封装成函数
+     供拓扑图每查找到一个新交换机进行调用
+@@ -50,7 +86,7 @@
+ end
+ 
+ function oidset_get(oidset_type)
+-	if oidset_type == nil then
++	if type(oidset_type) ~= "string" or not oidset_type:match("^[%w_.%-]+$") then
+ 		return nil
+ 	end
+ 
+@@ -61,6 +97,10 @@
+ 		for line in oid_fp:lines() do
+ 			local k, v = string.match(line, "^([^ ]+)=([^ \r\n]+)")
+ 			if k and v then
++				if not valid_oid(v) then
++					oid_fp:close()
++					return nil
++				end
+ 				oidset_data[k] = v
+ 			end
+ 		end
+@@ -102,57 +142,72 @@
+ end
+ 
+ function syscmd_get(method, dstip, oid_table)
++	if not valid_ip(dstip) then
++		return "false"
++	end
+ 	local cmd=""
+ 	local default_option=""
+ 	if gconf_one["snmp_version"] == "v2c" then
+-		default_option=string.format("%s -c %s -v2c -Oq ", method, gconf_one["community"])
++		default_option=string.format("%s -c %s -v2c -Oq ", method, shell_quote(gconf_one["community"]))
+ 	elseif gconf_one["snmp_version"] == "3" then
+ 		if gconf_one["security"] == "authNoPriv" then
+-			default_option=string.format("%s -v 3 -u %s -l authNoPriv -a %s -A %s -Oq ", method, gconf_one["username"], gconf_one["auth_proto"], gconf_one["auth_pass"])
++			default_option=string.format("%s -v 3 -u %s -l authNoPriv -a %s -A %s -Oq ", method, shell_quote(gconf_one["username"]), shell_quote(gconf_one["auth_proto"]), shell_quote(gconf_one["auth_pass"]))
+ 		else
+-			default_option=string.format("%s -v 3 -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, gconf_one["username"], gconf_one["auth_proto"], gconf_one["auth_pass"], gconf_one["priv_proto"], gconf_one["priv_pass"])
++			default_option=string.format("%s -v 3 -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, shell_quote(gconf_one["username"]), shell_quote(gconf_one["auth_proto"]), shell_quote(gconf_one["auth_pass"]), shell_quote(gconf_one["priv_proto"]), shell_quote(gconf_one["priv_pass"]))
+ 		end
+ 	end
+ 
+ 	for _,v in ipairs(oid_table) do
+-		cmd = cmd .. default_option .. dstip .. " " .. v .. " 2>/dev/null ;"
++		if not valid_oid(v) then
++			return "false"
++		end
++		cmd = cmd .. default_option .. shell_quote(dstip) .. " " .. v .. " 2>/dev/null ;"
+ 	end
+ 	return cmd
+ end
+ 
+ function snmp_cmdline_get(method, oid_table, config)
++	if not valid_ip(config["ip_addr"]) then
++		return "false"
++	end
+ 	local cmd=""
+ 	local default_option=""
+ 	if config["snmp_version"] == "v2c" then
+-		default_option=string.format("%s -c %s -v2c -Oq ", method, config["community"])
++		default_option=string.format("%s -c %s -v2c -Oq ", method, shell_quote(config["community"]))
+ 	elseif config["snmp_version"] == "3" then
+ 		if config["security"] == "authNoPriv" then
+-			default_option=string.format("%s -v 3 -u %s -l authNoPriv -a %s -A %s -Oq ", method, config["username"], config["auth_proto"], config["auth_pass"])
++			default_option=string.format("%s -v 3 -u %s -l authNoPriv -a %s -A %s -Oq ", method, shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]))
+ 		else
+-			default_option=string.format("%s -v 3 -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, config["username"], config["auth_proto"], config["auth_pass"], config["priv_proto"], config["priv_pass"])
++			default_option=string.format("%s -v 3 -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]), shell_quote(config["priv_proto"]), shell_quote(config["priv_pass"]))
+ 		end
+ 	end
+ 
+ 	for _,v in ipairs(oid_table) do
+-		cmd = cmd .. default_option .. config["ip_addr"] .. " " .. v .. " 2>/dev/null ;"
++		if not valid_oid(v) then
++			return "false"
++		end
++		cmd = cmd .. default_option .. shell_quote(config["ip_addr"]) .. " " .. v .. " 2>/dev/null ;"
+ 	end
+ 	return cmd
+ end
+ 
+ function snmp_cmdline_oid_get(method, oid, config)
++	if not valid_ip(config["ip_addr"]) or not valid_oid(oid) then
++		return "false"
++	end
+ 	local cmd=""
+ 	local default_option=""
+ 	if config["snmp_version"] == "v2c" then
+-		default_option=string.format("%s -c %s -v2c -t %s -Oq ", method, config["community"], config["timeout"] or "1")
++		default_option=string.format("%s -c %s -v2c -t %s -Oq ", method, shell_quote(config["community"]), shell_quote(config["timeout"] or "1"))
+ 	elseif config["snmp_version"] == "3" then
+ 		if config["security"] == "authNoPriv" then
+-			default_option=string.format("%s -v 3 -t %s -u %s -l authNoPriv -a %s -A %s -Oq ", method, config["timeout"] or "1", config["username"], config["auth_proto"], config["auth_pass"])
++			default_option=string.format("%s -v 3 -t %s -u %s -l authNoPriv -a %s -A %s -Oq ", method, shell_quote(config["timeout"] or "1"), shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]))
+ 		else
+-			default_option=string.format("%s -v 3 -t %s -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, config["timeout"] or "1", config["username"], config["auth_proto"], config["auth_pass"], config["priv_proto"], config["priv_pass"])
+-		end
+-	end
+-
+-	cmd = default_option .. config["ip_addr"] .. " " .. oid .. " 2>/dev/null ;"
++			default_option=string.format("%s -v 3 -t %s -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", method, shell_quote(config["timeout"] or "1"), shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]), shell_quote(config["priv_proto"]), shell_quote(config["priv_pass"]))
++		end
++	end
++
++	cmd = default_option .. shell_quote(config["ip_addr"]) .. " " .. oid .. " 2>/dev/null ;"
+ 	return cmd
+ end
+ 
+@@ -752,16 +807,10 @@
+ 			end
+ 		end
+ 
+-		--从交换机缓存中取ip对应的mac地址
+-		local command=string.format("cat /tmp/iktmp/cache/cloud_switch/config |grep \"\\b%s\\b\" 2>/dev/null", dstip)
+-		local fp = io.popen(command)
+-		local mac = ""
+-		if fp then
+-			switch_data = fp:read("*a")
+-			if switch_data then
+-				mac=string.match(switch_data, "mac=([^ ]+)")
+-			end
+-			fp:close()
++		--gconf_one 已由同一份交换机缓存解析，不再通过 shell 重复查询
++		local mac = gconf_one["mac"] or ""
++		if not valid_mac(mac) then
++			mac = ""
+ 		end
+ 
+ 		--根据mac和端口索引查询保存的配置
+--- 3.7.24/usr/ikuai/script/utils/convert_config_old.sh
++++ 3.7.25/usr/ikuai/script/utils/convert_config_old.sh
+@@ -230,7 +230,7 @@
+ 		fi
+ 		check_link_host="${check_link_host}"
+ 		
+-		sql_param="upload:int download:int qos_upload:int qos_download:int comment:str interface:srt enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int username:str passwd:str timing_rst_switch:int timing_rst_week:str timing_rst_time:str cycle_rst_time:int pppoe_service:str pppoe_ac:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
++		sql_param="upload:int download:int qos_upload:int qos_download:int comment:str interface:str enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int username:str passwd:str timing_rst_switch:int timing_rst_week:str timing_rst_time:str cycle_rst_time:int pppoe_service:str pppoe_ac:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
+ 	
+ 		sql_config_insert $NEW_IKUAI_DB wan_vlan "$sql_param"
+ 	done
+@@ -271,7 +271,7 @@
+ 		fi
+ 		check_link_host="${check_link_host}"
+ 		
+-		sql_param="upload:int download:int qos_upload:int qos_download:int comment:str interface:srt enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int ip_mask:str gateway:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
++		sql_param="upload:int download:int qos_upload:int qos_download:int comment:str interface:str enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int ip_mask:str gateway:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
+ 	
+ 		sql_config_insert $NEW_IKUAI_DB wan_vlan "$sql_param"
+ 	done
+@@ -1014,7 +1014,7 @@
+ 			protocol="any"
+ 		fi
+ 		class=${DPI_PROTONAME[$class]}
+-		sql_param="enabled:str comment:srt name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
++		sql_param="enabled:str comment:str name:str src_addr:str dst_addr:str protocol:str src_port:str dst_port:str class:int appid:int"
+ 		sql_config_insert $NEW_IKUAI_DB dprotos "$sql_param"
+ 	done
+ 	unset DPI_PROTONAME
+@@ -1043,7 +1043,7 @@
+ 			enabled="no"
+ 		fi
+ 		class=${DPI_PROTONAME[$class]}
+-		sql_param="enabled:str comment:srt name:str class:int appid:int rule:str"
++		sql_param="enabled:str comment:str name:str class:int appid:int rule:str"
+ 		sql_config_insert $NEW_IKUAI_DB dprotos_l7 "$sql_param"
+ 	done
+ 	unset DPI_PROTONAME
+--- 3.7.24/usr/ikuai/script/utils/convert_config_old_mips.sh
++++ 3.7.25/usr/ikuai/script/utils/convert_config_old_mips.sh
+@@ -245,7 +245,7 @@
+ 		fi
+ 		check_link_host="${check_link_host}"
+ 		
+-		sql_param_vlan="upload:int download:int qos_upload:int qos_download:int qos_switch:int comment:str interface:srt enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int username:str passwd:str timing_rst_switch:int timing_rst_week:str timing_rst_time:str cycle_rst_time:int pppoe_service:str pppoe_ac:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
++		sql_param_vlan="upload:int download:int qos_upload:int qos_download:int qos_switch:int comment:str interface:str enabled:str vlan_id:int vlan_name:str mac:str vlan_internet:int username:str passwd:str timing_rst_switch:int timing_rst_week:str timing_rst_time:str cycle_rst_time:int pppoe_service:str pppoe_ac:str default_route:int disc_auto_switch:int check_link_mode:int check_link_host:str"
+ 	
+ 		sql_config_insert $NEW_IKUAI_DB wan_vlan "$sql_param_vlan"
+ 	done
+--- 3.7.24/usr/ikuai/script/utils/devdiscovery.lua
++++ 3.7.25/usr/ikuai/script/utils/devdiscovery.lua
+@@ -1,6 +1,7 @@
+ #!/usr/bin/luajit
+ 
+ local cjson = require "cjson"
++local string_check = require "iklua.string.check"
+ --local sqlite3 = require "lsqlite3"
+ 
+ --local SWITCH_DB = "/etc/log/switch.db"
+@@ -9,6 +10,41 @@
+ local g_snmp_option = {}
+ --local dstip = arg[2]
+ --local action = arg[3]
++
++local function shell_quote(value)
++	return "'" .. tostring(value or ""):gsub("'", "'\\''") .. "'"
++end
++
++local function valid_oid(value)
++	if type(value) ~= "string" then
++		return false
++	end
++	if value:sub(1, 1) == "." then
++		value = value:sub(2)
++	end
++	if value == "" or value:sub(1, 1) == "."
++		or value:sub(-1) == "." or value:find("..", 1, true) then
++		return false
++	end
++	local count = 0
++	for part in value:gmatch("[^.]+") do
++		if not part:match("^%d+$") then
++			return false
++		end
++		count = count + 1
++	end
++	return count > 0
++end
++
++local function valid_ip(value)
++	return type(value) == "string" and not value:find("/", 1, true)
++		and (string_check.ip(value) or string_check.ipv6(value))
++end
++
++local function valid_mac(value)
++	return type(value) == "string"
++		and value:match("^%x%x:%x%x:%x%x:%x%x:%x%x:%x%x$") ~= nil
++end
+ 
+ local manage_oids = {}
+ 
+@@ -107,12 +143,12 @@
+ function get_cache_snmp_option(config)
+ 	local cache_conf_option=""
+ 	if config["snmp_version"] == "v2c" then
+-		cache_conf_option=string.format(" -c %s -v2c -t %s -Oq ", config["community"], config["timeout"] or "1")
++		cache_conf_option=string.format(" -c %s -v2c -t %s -Oq ", shell_quote(config["community"]), shell_quote(config["timeout"] or "1"))
+ 	elseif config["snmp_version"] == "3" then
+ 		if config["security"] == "authNoPriv" then
+-			cache_conf_option=string.format(" -v 3 -t %s -u %s -l authNoPriv -a %s -A %s -Oq ", config["timeout"] or "1", config["username"], config["auth_proto"], config["auth_pass"])
++			cache_conf_option=string.format(" -v 3 -t %s -u %s -l authNoPriv -a %s -A %s -Oq ", shell_quote(config["timeout"] or "1"), shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]))
+ 		else
+-			cache_conf_option=string.format(" -v 3 -t %s -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", config["timeout"] or "1", config["username"], config["auth_proto"], config["auth_pass"], config["priv_proto"], config["priv_pass"])
++			cache_conf_option=string.format(" -v 3 -t %s -u %s -l authPriv -a %s -A %s -x %s -X %s -Oq ", shell_quote(config["timeout"] or "1"), shell_quote(config["username"]), shell_quote(config["auth_proto"]), shell_quote(config["auth_pass"]), shell_quote(config["priv_proto"]), shell_quote(config["priv_pass"]))
+ 		end
+ 	end
+ 	--print(cjson.encode({cache_conf_option}))
+@@ -146,7 +182,7 @@
+ 				end
+ 			end
+ 			config_one["timeout"] = "1"
+-			if config_one.mac then
++			if valid_mac(config_one.mac) then
+ 				config[config_one.mac] = config_one
+ 			end
+ 		end
+@@ -175,8 +211,10 @@
+ 	for name, oid in pairs(oids) do
+ 		--print(name, oid)
+ 		local cmd = ""
+-		if sw and sw.mac and g_snmp_option[sw.mac].w_snmp_opt and sw.ip_addr and oid then
+-			cmd = string.format("snmpbulkwalk %s %s %s 2>/dev/null", g_snmp_option[sw.mac].r_snmp_opt, sw.ip_addr, oid)
++		if sw and valid_mac(sw.mac) and g_snmp_option[sw.mac]
++			and g_snmp_option[sw.mac].w_snmp_opt and valid_ip(sw.ip_addr)
++			and valid_oid(oid) then
++			cmd = string.format("snmpbulkwalk %s %s %s 2>/dev/null", g_snmp_option[sw.mac].r_snmp_opt, shell_quote(sw.ip_addr), oid)
+ 		else
+ 			return ipv4_switches
+ 		end
+@@ -311,8 +349,10 @@
+ 	--print(cjson.encode(g_snmp_option))
+ 	--print(cjson.encode(oid))
+ 	local cmd = ""
+-	if sw and sw.mac and g_snmp_option[sw.mac] and g_snmp_option[sw.mac].w_snmp_opt and sw.ip_addr and oid then
+-		cmd = string.format("snmpbulkwalk %s %s %s 2>/dev/null", g_snmp_option[sw.mac].r_snmp_opt, sw.ip_addr, oid)
++	if sw and valid_mac(sw.mac) and g_snmp_option[sw.mac]
++		and g_snmp_option[sw.mac].w_snmp_opt and valid_ip(sw.ip_addr)
++		and valid_oid(oid) then
++		cmd = string.format("snmpbulkwalk %s %s %s 2>/dev/null", g_snmp_option[sw.mac].r_snmp_opt, shell_quote(sw.ip_addr), oid)
+ 	else
+ 		return nil
+ 	end
+@@ -373,8 +413,11 @@
+ --检查设备是否是管理设备
+ function get_sw_command_status(sw)
+ 	local cmd = ""
+-	if sw and sw.mac and g_snmp_option[sw.mac] and g_snmp_option[sw.mac].w_snmp_opt and sw.oid_type and manage_oids[sw.oid_type] and manage_oids[sw.oid_type]["character"] then
+-		cmd = string.format("snmpget %s %s %s 2>/dev/null", g_snmp_option[sw.mac].w_snmp_opt, sw.ip_addr, manage_oids[sw.oid_type]["character"])
++	if sw and valid_mac(sw.mac) and g_snmp_option[sw.mac]
++		and g_snmp_option[sw.mac].w_snmp_opt and valid_ip(sw.ip_addr)
++		and sw.oid_type and manage_oids[sw.oid_type]
++		and valid_oid(manage_oids[sw.oid_type]["character"]) then
++		cmd = string.format("snmpget %s %s %s 2>/dev/null", g_snmp_option[sw.mac].w_snmp_opt, shell_quote(sw.ip_addr), manage_oids[sw.oid_type]["character"])
+ 	else
+ 		return nil
+ 	end
+@@ -396,10 +439,12 @@
+ function set_sw_command_status(sw, status)
+ 	local cmd = ""
+ 	--print(cjson.encode(sw))
+-	if sw and sw.mac and g_snmp_option[sw.mac].w_snmp_opt and sw.oid_type
+-		and manage_oids[sw.oid_type] and manage_oids[sw.oid_type]["character"] then
++	if sw and valid_mac(sw.mac) and g_snmp_option[sw.mac]
++		and g_snmp_option[sw.mac].w_snmp_opt and valid_ip(sw.ip_addr)
++		and sw.oid_type and manage_oids[sw.oid_type]
++		and valid_oid(manage_oids[sw.oid_type]["character"]) then
+ 		cmd = string.format("snmpset %s %s %s %s %d 2>/dev/nul",
+-			g_snmp_option[sw.mac].w_snmp_opt, sw.ip_addr,
++			g_snmp_option[sw.mac].w_snmp_opt, shell_quote(sw.ip_addr),
+ 			manage_oids[sw.oid_type]["character"], "i", status)
+ 	else
+ 		return nil
+@@ -523,8 +568,9 @@
+ 		--[[只自动发现ikuai交换机，郑皓于20210630说的，无论ikuai交换机下发现的是否又发现了其他厂家的交换机]]
+ 		and true == is_ik_sw(sw)
+ 		--[[检测是否能ping通，不通不展示发现，因为snmp无法实现控制]]
++		and valid_ip(sw.ip_addr)
+ 		and (("" ~= sw.ip_addr and nil ~= sw.ip_addr and "0.0.0.0" ~= sw.ip_addr)
+-			and 0 == os.execute ("ikcheck ping " .. sw.ip_addr .. " -t 2 -c 1 >/dev/null")) then
++			and 0 == os.execute ("ikcheck ping " .. shell_quote(sw.ip_addr) .. " -t 2 -c 1 >/dev/null")) then
+ 			table.insert(all_switchers_infos, sw)
+ 		end
+ 	end
+--- 3.7.24/usr/ikuai/script/utils/ldapinfo_load.lua
++++ 3.7.25/usr/ikuai/script/utils/ldapinfo_load.lua
+@@ -16,6 +16,12 @@
+ 
+ local function base64_decode(str)
+ 	local res
++	if type(str) ~= "string" then
++		return nil
++	end
++	if str:find("[^A-Za-z0-9+/=]") then
++		return nil
++	end
+ 	local cmd = string.format("echo %s | base64 -d", str)
+ 	local fp = io.popen(cmd)
+ 	if fp then
+--- 3.7.24/usr/ikuai/script/utils/monitor_process.sh
++++ 3.7.25/usr/ikuai/script/utils/monitor_process.sh
+@@ -3,7 +3,61 @@
+ alias getpid="awk '\$1==\"PPid:\"{print \$2;exit}' /proc/self/status"
+ 
+ Include lock.sh ik_hosts.sh sys/cgroup_control.sh
+-I18nload sys_event.json 
++I18nload sys_event.json
++
++# Only execute regular files at the configured path; do not follow symlinks.
++__is_regular_file()
++{
++	local file="$1"
++	[ -f "$file" ] && [ ! -L "$file" ]
++}
++
++__is_safe_executable()
++{
++	local executable="$1"
++
++	if __is_regular_file "$executable" && [ -x "$executable" ]; then
++		return 0
++	fi
++
++	# ikdnsx is the only allowed symlink and must resolve to the real ikdnsd binary.
++	[ "$executable" = "/usr/sbin/ikdnsx" ] || return 1
++	[ -L "$executable" ] || return 1
++	[ "$(readlink -f "$executable")" = "/usr/sbin/ikdnsd" ] || return 1
++	__is_regular_file /usr/sbin/ikdnsd && [ -x /usr/sbin/ikdnsd ]
++}
++
++__exec_safe()
++{
++	local executable="$1"
++	shift
++	__is_safe_executable "$executable" || return 126
++	"$executable" "$@"
++}
++
++__exec_safe_bg()
++{
++	local executable="$1"
++	shift
++	__is_safe_executable "$executable" || return 126
++	exec "$executable" "$@"
++}
++
++__cgroup_exec_safe()
++{
++	local executable="$1"
++	shift
++	__is_safe_executable "$executable" || return 126
++	cgroup_exec "$executable" "$@"
++}
++
++__cgroup_exec_safe_bg()
++{
++	local executable="$1"
++	shift
++	__is_safe_executable "$executable" || return 126
++	cgroup_exec "$executable" "$@" &
++}
+ 
+ boot()
+ {
+@@ -52,8 +106,8 @@
+ 	ethtool -K eth0 gro off >/dev/null 2>&1
+ 	ethtool -K eth1 gro off >/dev/null 2>&1
+ 	while read name other; do
+-		ethtool -K $name tso off >/dev/null 2>&1
+-		ethtool -K $name gro off >/dev/null 2>&1
++		ethtool -K "$name" tso off >/dev/null 2>&1
++		ethtool -K "$name" gro off >/dev/null 2>&1
+ 	done < /tmp/iktmp/cache/ether_info
+ }
+ 
+@@ -64,7 +118,7 @@
+ 	if [ -n "$1" -a -e "/etc/log/.tso_set" ]; then
+ 		__tso_off
+ 	fi
+-	
++
+ 	[ -e "/etc/log/.tso_set" ] && return
+ 
+ 	local current_timestamp=$(date +%s)
+@@ -107,211 +161,230 @@
+ 		all_process="`cat /proc/[0-9]*/stat 2>/dev/null|cut -d " " -f2 `"
+ 
+ 		if ! __get_process_status openresty ;then
+-			openresty
++			__exec_safe /usr/sbin/openresty
+ 		fi
+ 
+ 		#ikdnsd
+ 		if [ -e /tmp/iktmp/ikdnsx.status ]&& ! __get_process_status ikdnsx ;then
+-			sh /tmp/iktmp/ikdnsx.status
++			__exec_safe /usr/sbin/ikdnsx -C /tmp/hosts_conf -S /tmp/hosts_ikuai8 -P /var/run/ikdnsx.hosts.pid
+ 			Syslog $(Iecho i18n_sys_event_monitor_process 'DNS')
+ 		fi
+ 		if [ -e /tmp/iktmp/ikdnsd.status ]&& ! __get_process_status ikdnsd ;then
+-			sh /tmp/iktmp/ikdnsd.status
++			__exec_safe /usr/sbin/ikdnsd -C /tmp/iktmp/ikdnsd.conf -S /tmp/iktmp/ikdnsd.static.conf -P /var/run/ikdnsd.pid
+ 			Syslog $(Iecho i18n_sys_event_monitor_process 'DNS')
+ 		fi
+ 
+ 		#DHCPserver
+ 		if [ -e /tmp/iktmp/dhcp-server.status ]&& ! __get_process_status ik_dhcpd ;then
+-			sh /tmp/iktmp/dhcp-server.status && \
+-			Syslog $(Iecho i18n_sys_event_monitor_process 'DHCPD')
+-			##路由感知
+-			/usr/ikuai/script/rt_collect.sh add_db_send \
+-				server_name="dhcp_server" action="restart" priority=3 append_detail="monitor_process restart" >/dev/null 2>&1 &
++			if __exec_safe /usr/sbin/ik_dhcpd -c /tmp/iktmp/ik_dhcpd.conf -s /tmp/iktmp/ik_dhcpd_static.conf -l /var/db/leases.db; then
++				Syslog $(Iecho i18n_sys_event_monitor_process 'DHCPD')
++				##路由感知
++				__exec_safe_bg /usr/ikuai/script/rt_collect.sh add_db_send \
++					server_name="dhcp_server" action="restart" priority=3 \
++					append_detail="monitor_process restart" >/dev/null 2>&1 &
++			fi
+ 		fi
+ 
+ 		#ik_kernel_event
+ 		if ! __get_process_status ik_kernel_event ;then
+-			ik_kernel_event >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/sbin/ik_kernel_event >/dev/null 2>/dev/null &
+ 			Syslog $(Iecho i18n_sys_event_ik_kernel_event)
+ 		fi
+ 
+ 		if [ -z "$SUPPORT_MINI_FUNC" ]; then
+ 			#ik_black
+ 			if ! __get_process_status ik_black ;then
+-				ik_black >/dev/null 2>/dev/null &
++				__exec_safe_bg /usr/bin/ik_black >/dev/null 2>/dev/null &
+ 				Syslog $(Iecho i18n_sys_event_ik_black)
+ 			fi
+ 			##lldpd
+ 			if ! __get_process_status lldpd  ;then
+-				lldpd -s >/dev/null 2>&1 &
++				__exec_safe_bg /usr/sbin/lldpd -s >/dev/null 2>&1 &
+ 			fi
+ 		fi
+ 
+ 		#ik_stats_collect
+ 		if ! __get_process_status ik_stats_collect ;then
+-			ik_stats_collect -ds /proc/ikuai/stats/ik_proto_stats >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/sbin/ik_stats_collect -ds /proc/ikuai/stats/ik_proto_stats >/dev/null 2>/dev/null &
+ 			Syslog $(Iecho i18n_sys_event_ik_stats_collect)
+ 		fi
+-		
++
+ 		#ikstats: cpu, iface
+ 		if ! __get_process_status ikstats ;then
+-			ikstats >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/sbin/ikstats >/dev/null 2>/dev/null &
+ 			Syslog $(Iecho i18n_sys_event_ikifstat)
+ 		fi
+ 		#iksyslogd
+ 		if ! __get_process_status iksyslogd ;then
+-			iksyslogd >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/sbin/iksyslogd >/dev/null 2>/dev/null &
+ 			Syslog $(Iecho i18n_sys_event_iksyslogd)
+ 		fi
+ 
+ 		if [ -e "$IK_DIR_VRRP/is_enabled" ] && ! __get_process_status ik_confsync_server ;then
+-			ik_confsync_server >/dev/null 2>&1
++			__exec_safe /usr/bin/ik_confsync_server >/dev/null 2>&1
+ 		fi
+ 
+ 		#AC
+-		if [ -e /tmp/iktmp/AC.status ] && ! __get_process_status AC ;then
+-			local cmd=$(cat /tmp/iktmp/AC.status)
+-			$cmd >/dev/null 2>&1 &
++		if [ -e /tmp/iktmp/AC.status ]&& ! __get_process_status AC ;then
++			local $(cat /tmp/iktmp/cache/config/basic)
++			local branch=""
++			if [ "$link_mode" = "1" ];then
++				branch="-b"
++			fi
++			__exec_safe /usr/bin/AC $branch -c /usr/ikuai/ac
++
+ 			Syslog $(Iecho i18n_sys_event_ik_ac)
+ 		fi
+ 		if [ -e /tmp/iktmp/AC.mesh ]&& ! __get_process_status AC ;then
+-			local cmd=$(cat /tmp/iktmp/AC.mesh)
+-			$cmd >/dev/null 2>&1 &
++			local $(cat /tmp/iktmp/cache/config/basic)
++			local branch=""
++			if [ "$link_mode" = "1" ];then
++				branch="-b"
++			fi
++			__exec_safe /usr/bin/AC $branch -c /usr/ikuai/ac
++
+ 			Syslog $(Iecho i18n_sys_event_ik_ac)
+ 		fi
+ 
+ 		#auditd url
+-		if [ -e /tmp/iktmp/audit.open_url_record ] && ! __get_process_status ik_url_auditd ;then
++		if [ -e /tmp/iktmp/audit.open_url_record ]&& ! __get_process_status ik_url_auditd ;then
+ 			rm /usr/ikuai/www/audit_url
+ 			if [ -e "/etc/disk_sys/audit" ]; then
+ 				ln -s /etc/disk_sys/audit/stream /usr/ikuai/www/audit_url
+-				cgroup_exec ik_url_auditd -l /etc/disk_sys/audit >/dev/null 2>/dev/null &
++				__cgroup_exec_safe_bg /usr/bin/ik_url_auditd -l /etc/disk_sys/audit >/dev/null 2>/dev/null
+ 			else
+ 				ln -s /etc/log/audit/stream /usr/ikuai/www/audit_url
+-				cgroup_exec ik_url_auditd -l /etc/log/audit >/dev/null 2>/dev/null &
++				__cgroup_exec_safe_bg /usr/bin/ik_url_auditd -l /etc/log/audit >/dev/null 2>/dev/null
+ 			fi
+ 			Syslog $(Iecho i18n_sys_event_ik_auditd_url)
+ 		fi
+-		if [ -e /tmp/iktmp/ik_web_radius.status ] && ! __get_process_status ik_web_radius;then
++		if [ -e /tmp/iktmp/ik_web_radius.status ]&& ! __get_process_status ik_web_radius;then
+ 			rm /tmp/webradius_fifo
+-			ik_web_radius >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/bin/ik_web_radius >/dev/null 2>/dev/null &
+ 			sleep 1
+-			$IK_DIR_SCRIPT/webauth.sh radius_macbind_request >/dev/null 2&1 &
++			__exec_safe_bg "$IK_DIR_SCRIPT/webauth.sh" radius_macbind_request >/dev/null 2&1 &
+ 			Syslog $(Iecho i18n_sys_event_ik_web_radius)
+ 		fi
+ 		#auth sync
+-		if [ -e /tmp/iktmp/ik_sync_server.status ] && ! __get_process_status ik_sync_server;then
+-			sync_server_cmd=$(cat /tmp/iktmp/ik_sync_server.status)
+-			cgroup_exec $sync_server_cmd &
+-			Syslog $(Iecho i18n_sys_event_ik_sync_server)
+-		fi
++#		if [ -e /tmp/iktmp/ik_sync_server.status ]&& ! __get_process_status ik_sync_server;then
++#			sync_server_cmd=$(cat /tmp/iktmp/ik_sync_server.status)
++#			cgroup_exec $sync_server_cmd &
++#			Syslog $(Iecho i18n_sys_event_ik_sync_server)
++#		fi
+ 		#ik_ua_parser
+ 		if ! __get_process_status ik_host_ua ;then
+-			ik_host_ua >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/bin/ik_host_ua >/dev/null 2>/dev/null &
+ 			Syslog $(Iecho i18n_sys_event_ik_host_ua)
+ 		fi
+ 
+ 		#iktimerd
+ 		if ! __get_process_status iktimerd ;then
+-			iktimerd >/dev/null 2>/dev/null &
++			__exec_safe_bg /usr/sbin/iktimerd >/dev/null 2>/dev/null &
+ 		fi
+ 
+ 		#ikwecom
+ 		if [ -e "/tmp/iktmp/cache/wecom/is_bind" ] && ! __get_process_status ik_wecom ;then
+-			cgroup_exec ik_wecom &
++			__cgroup_exec_safe_bg /usr/sbin/ik_wecom &
+ 		fi
+ 
+ 		#hostapd
+-		if [ -e /tmp/iktmp/hostapd.status ]&& ! __get_process_status hostapd;then
+-			cmd=$(cat /tmp/iktmp/hostapd.status)
+-			$cmd >/dev/null 2>/dev/null &
+-		fi
++#		if [ -e /tmp/iktmp/hostapd.status ]&& ! __get_process_status hostapd;then
++#			cmd=$(cat /tmp/iktmp/hostapd.status)
++#			$cmd >/dev/null 2>/dev/null &
++#		fi
+ 
+ 		#ik_wpa_ppsk
+ 		if [ -e /tmp/iktmp/ik_wpa_ppsk.status ]&& ! __get_process_status ik_wpa_ppsk;then
+-			cmd=$(cat /tmp/iktmp/ik_wpa_ppsk.status)
+-			cgroup_exec $cmd &
++			local rk_seed=$(sqlite3 $IK_DB_CONFIG "select rk_seed from ac_randkey limit 1")
++			local rk_timeout=$(sqlite3 $IK_DB_CONFIG "select rk_timeout from ac_randkey limit 1")
++			__cgroup_exec_safe /usr/sbin/ik_wpa_ppsk -r -s /tmp/iktmp/ik_wpa_ppsk.ssid -S $rk_seed -t $rk_timeout
+ 			Syslog $(Iecho i18n_sys_event_ik_wpa_ppsk)
+ 		fi
+ 
+ 		if [ -e /tmp/iktmp/cache/snmp_ipauth/is_enabled ] && ! __get_process_status ik_switch_arp ;then
+-			cgroup_exec ik_switch_arp >/dev/null 2>&1 &
++			__cgroup_exec_safe_bg /usr/bin/ik_switch_arp >/dev/null 2>&1
+ 			Syslog $(Iecho i18n_sys_event_ik_switch_arp)
+ 		fi
+ 
+ 		if [ -e /tmp/iktmp/upnpd_enabled ] && ! __get_process_status miniupnpd ;then
+-			cgroup_exec miniupnpd -f /tmp/iktmp/miniupnpd.conf >/dev/null 2>&1 &
++			__cgroup_exec_safe_bg /usr/sbin/miniupnpd -f /tmp/iktmp/miniupnpd.conf >/dev/null 2>&1
+ 		fi
+ 
+ 		if [ -e /tmp/iktmp/cache/ik_webauth_roaming/is_enabled ] && ! __get_process_status ik_webauth_server ;then
+ 			local $(cat /tmp/iktmp/cache/ik_webauth_roaming/config)
+-			cgroup_exec ik_webauth_server -r $roaming_ip -p $roaming_port >/dev/null 2>&1 &
+-		fi
+-	
++			__cgroup_exec_safe_bg /usr/bin/ik_webauth_server -r $roaming_ip -p $roaming_port >/dev/null 2>&1
++		fi
++
+ 		#ik_audit,3th verison
+ 		if [ -e /tmp/iktmp/ik_audit_client.status ]; then
+ 			if ! __get_process_status ik_audit_publisher || ! __get_process_status ik_audit_client ; then
+ 				killall ik_audit_publisher 2>/dev/null
+ 				killall ik_audit_client 2>/dev/null
+-				ik_audit_publisher >/dev/null 2>/dev/null &
++				__exec_safe_bg /usr/bin/ik_audit_publisher >/dev/null 2>/dev/null &
+ 				sleep 1
+-				ik_audit_client -l 0  >/dev/null 2>/dev/null &
++				__exec_safe_bg /usr/bin/ik_audit_client -l 0 >/dev/null 2>/dev/null &
+ 				Syslog $(Iecho i18n_sys_event_ik_audit_publisher)
+ 				Syslog $(Iecho i18n_sys_event_ik_audit)
+ 			fi
+ 
+ 			if ! pidof ikaudit_update.sh  >/dev/null;then
+ 				rm -f /tmp/ikaudit_update.lock 2>/dev/null
+-				start-stop-daemon -S -x /usr/ikuai/script/ikaudit_update.sh -b >/dev/null 2>&1
++				if __is_safe_executable /usr/ikuai/script/ikaudit_update.sh; then
++					start-stop-daemon -S -x /usr/ikuai/script/ikaudit_update.sh -b >/dev/null 2>&1
++				fi
+ 			fi
+ 		fi
+ 
+ 		if [ "$SUPPORT_LCD" ] && ! __get_process_status lcd.sh ;then
+-			/usr/ikuai/script/lcd.sh  >/dev/null 2>&1 &
+-		fi 
++			__exec_safe_bg /usr/ikuai/script/lcd.sh >/dev/null 2>&1 &
++		fi
+ 
+ 		## pacakge manager daemon
+ 		if ! __get_process_status pmd ;then
+-			cgroup_exec pmd  >/dev/null 2>/dev/null &
++			__cgroup_exec_safe_bg /tmp/ikpkg/pmd/pmd >/dev/null 2>/dev/null
+ 		fi
+ 
+ 		## 2nd remote control client
+ 		if ! __get_process_status ik_rc_client ;then
+-			cgroup_exec ik_rc_client  >/dev/null 2>/dev/null &
++			if __is_regular_file /usr/sbin/ik_rc_client; then
++				chmod 755 /usr/sbin/ik_rc_client 2>/dev/null
++				__cgroup_exec_safe_bg /usr/sbin/ik_rc_client >/dev/null 2>/dev/null
++			fi
+ #			Syslog $(Iecho i18n_sys_event_ik_remote_ikuai)
+ 		fi
+ 
+ 		## collect report engine daemon
+ 		if ! __get_process_status cre ;then
+-			cgroup_exec cre  >/dev/null 2>/dev/null &
++			__cgroup_exec_safe_bg /tmp/ikpkg/cre/cre >/dev/null 2>/dev/null
+ 			Syslog $(Iecho i18n_sys_event_ik_route_collect)
+ 		fi
+ 
+ 		## cre client for ome
+-		if [ "$OEM_CRE_MONITOR" ];then
+-			if ! __get_process_status cre_client ;then
+-				cgroup_exec cre_client start  >/dev/null 2>/dev/null &
+-			fi
+-		fi
++#		if [ "$OEM_CRE_MONITOR" ];then
++#			if ! __get_process_status cre_client ;then
++#				cgroup_exec cre_client start  >/dev/null 2>/dev/null &
++#			fi
++#		fi
+ 
+ 		## get_hosts
+ 		if [ -z "$OEMNAME" -o "$OEMNAME" = "oem" ]; then
+ 			if ! __get_process_status get_hosts.sh ;then
+-				cgroup_exec /usr/ikuai/script/utils/get_hosts.sh boot  >/dev/null 2>/dev/null &
++				__cgroup_exec_safe_bg /usr/ikuai/script/utils/get_hosts.sh boot \
++					>/dev/null 2>/dev/null
+ 			fi
+ 		fi
+ 
+ 		### test code
+ 		#if __get_process_status qemu-system-x86_64 || __get_process_status containerd || [ -e "/etc/disk_notify/youyu" ] ; then
+ 		#	__memory_balloon
+-		#fi 
++		#fi
+ 
+ 		#qemu
+ 		__get_qemu_status
+ 
+ 		using_hosts_update_process
+-		__monitor_cache_service  /tmp/monitor_cache
+-		__monitor_cache_service  /tmp/monitor_dtalk_cache
++#		__monitor_cache_service  /tmp/monitor_cache
++#		__monitor_cache_service  /tmp/monitor_dtalk_cache
+ 		__check_acpi_interrupts
+ 		__check_tso_align
+ 
+@@ -319,7 +392,7 @@
+ 
+ 		$UNLOCK
+ 		sleep 30
+-	done	
++	done
+ }
+ 
+  __get_qemu_status(){
+@@ -330,7 +403,7 @@
+ 			local pid=$(cat $filedir/$index/pid)
+ 			local temp=$(ps -w | awk '$1 == "'$pid'" && $5~/^qemu-system+/{print $1}')
+ 			if [ -z $temp ];then
+-				/usr/ikuai/script/qemu.sh up id=$index >/dev/null 2>/dev/null &
++				__exec_safe_bg /usr/ikuai/script/qemu.sh up id=$index >/dev/null 2>/dev/null &
+ 			fi
+ 		fi
+ 	done
+@@ -339,7 +412,7 @@
+ __monitor_cache_service ()
+ {
+ 	local monitored_serv=$1
+-	[ ! -x ${monitored_serv} ] && return
++	__is_safe_executable "$monitored_serv" || return
+ 
+ 	if pidof nginx ;then
+ 		local master_pid=`cat /var/run/nginx.pid 2>/dev/null`
+@@ -358,6 +431,6 @@
+ 		fi
+ 	fi
+ 
+-	${monitored_serv} start 2>/dev/null >/dev/null &
++	__exec_safe_bg "$monitored_serv" start 2>/dev/null >/dev/null &
+ 	Syslog $(Iecho i18n_sys_event_ik_cache_servcie)
+ }
+--- 3.7.24/usr/ikuai/script/utils/submit.lua
++++ 3.7.25/usr/ikuai/script/utils/submit.lua
+@@ -1,7 +1,9 @@
+ #!/usr/bin/luajit /etc/ikLcommon
+ local M = {}
++local SUBMIT_CACHE_DIR = "/tmp/iktmp/submit"
+ local SUBMIT_CACHE_BIN = "/tmp/iktmp/submit/submit3"
+ local SUBMIT_CACHE_TMP = "/tmp/iktmp/submit/.submit3.tmp"
++local SUBMIT_BUILTIN_BIN = "/usr/ikuai/submit/submit3"
+ local ffi = require "ffi"
+ local C = ffi.C
+ ffi.cdef [[
+@@ -10,6 +12,12 @@
+ ]]
+ 
+ local struct_timeval = ffi.new("struct submit_timeval[2]")
++local function submit_init()
++	if not ikL_existfile(SUBMIT_CACHE_BIN) and ikL_existfile(SUBMIT_BUILTIN_BIN) then
++		os.execute(str_format("mkdir -p %s && cp -f %s %s", SUBMIT_CACHE_DIR, SUBMIT_BUILTIN_BIN, SUBMIT_CACHE_BIN))
++	end
++end
++
+ local function submit_update()
+ 	local result = false
+ 	local submit_url
+@@ -115,6 +123,7 @@
+ end
+ 
+ function M:boot()
++	submit_init()
+ 	ikL_daemon()
+ 	monitor()
+ end
+--- 3.7.24/usr/ikuai/script/utils/update_hosts.sh
++++ 3.7.25/usr/ikuai/script/utils/update_hosts.sh
+@@ -1,6 +1,27 @@
+ #!/bin/bash /etc/ikcommon
+ CRT_PATH="/etc/ssl/32017"
+ SAVE_PATH="/tmp/iktmp/ik_hosts"
++DEFAULT_HOSTS_PATH="/etc/get_hosts"
++
++init()
++{
++	local node
++	local region
++	local hosts_file
++
++	node=$(sqlite3 "$IK_DB_CONFIG" "select node from register where id=1;" 2>/dev/null)
++
++	case "$node" in
++	1) region="en" ;;
++	2) region="sg" ;;
++	*) region="cn" ;;
++	esac
++
++	hosts_file="$DEFAULT_HOSTS_PATH/ik_hosts_v4_${region}.json"
++	[ -r "$hosts_file" ] || return 1
++	mkdir -p "$SAVE_PATH" || return 1
++	[ "$(__parse_json "$(cat "$hosts_file")")" = "Success" ]
++}
+ 
+ boot()
+ {
+--- 3.7.24/usr/ikuai/script/wan.sh
++++ 3.7.25/usr/ikuai/script/wan.sh
+@@ -510,7 +510,7 @@
+ vlan_add()
+ {
+ 	__check_param_vlan || exit 1
+-	local sql_param="id:null upload:int download:int comment:str interface:srt enabled:str vlan_id:str vlan_name:str mac:str vlan_internet:int default_route:int disc_auto_switch:int link_time:str check_link_mode:int check_link_host:str"
++	local sql_param="id:null upload:int download:int comment:str interface:str enabled:str vlan_id:str vlan_name:str mac:str vlan_internet:int default_route:int disc_auto_switch:int link_time:str check_link_mode:int check_link_host:str"
+ 
+ 	case $vlan_internet in
+ 	 $INTERNET_STATIC) sql_param+=" ip_mask:str gateway:str" ;;
+--- 3.7.24/usr/ikuai/script/webauth.sh
++++ 3.7.25/usr/ikuai/script/webauth.sh
+@@ -1,6 +1,14 @@
+ #!/bin/bash /etc/ikcommon
+ Include convert_ipmask.sh auth/authqos.sh auth/authcntl.sh crond.sh timersql.sh
+ Include interface.sh sys/cgroup_control.sh auth/webid.sh urlcode.sh check.sh
++
++__is_decimal_uint()
++{
++	case "${1-}" in
++		''|*[!0-9]*) return 1 ;;
++		*) return 0 ;;
++	esac
++}
+ 
+ TRYOUT_EXPR_REC="/etc/mnt/ikuai/tryout_expired_record"
+ WEBAUTH_TEMP="/etc/mnt/template/webauth.zip"
+@@ -103,6 +111,13 @@
+ 	#auth_ver: 0是官方版本，其他都是OEM版本
+ 	local $(sql_config_get_list $IK_DB_CONFIG "select * from webauth")
+ 	local $(cat $IK_DIR_CACHE/config/basic)
++	local AUTH_MAX_TIME="${max_time:-0}"
++	local AUTH_IDLE_TIME="${idle_time:-0}"
++	local AUTH_MAX_TIME_SECONDS
++	if ! __is_decimal_uint "$AUTH_MAX_TIME" || ! __is_decimal_uint "$AUTH_IDLE_TIME"; then
++		return 1
++	fi
++	AUTH_MAX_TIME_SECONDS=$(($AUTH_MAX_TIME * 60))
+ 
+ 	iptables -w -F WEBAUTH
+ 	ipset -F Linux_webauth_default
+@@ -179,8 +194,8 @@
+ 
+ 			#认证超时预设值
+ 			ik_cntl auth tmp_time 120  >/dev/null
+-			ik_cntl auth max_time $((max_time*60)) >/dev/null
+-			ik_cntl auth idle_time ${idle_time:-0} >/dev/null
++			ik_cntl auth max_time "${AUTH_MAX_TIME_SECONDS:-0}" >/dev/null
++			ik_cntl auth idle_time "$AUTH_IDLE_TIME" >/dev/null
+ 			
+ 			#免认证的MAC地址
+ 			load_white_mac
+@@ -220,7 +235,34 @@
+ 	WHITE_IP_FILE="/tmp/white_wifi.ip.$$"
+ 	rm -f $WHITE_FILE $WHITE_DATA $REDIRECT_DOMAIN
+ 	: > "$WHITE_IP_FILE"
+-	gawk -v whiteip="$whiteip" -v white_ip_file="$WHITE_IP_FILE" '
++	gawk \
++		-v whiteip="$whiteip" \
++		-v white_ip_file="$WHITE_IP_FILE" \
++		-v redirect_domain="$REDIRECT_DOMAIN" \
++		-v api_switch="$api_switch" \
++		-v api_radius="$api_radius" \
++		-v user_auth="$user_auth" \
++		-v coupon_auth="$coupon_auth" \
++		-v qq_auth="$qq_auth" \
++		-v weibo_auth="$weibo_auth" \
++		-v facebook_auth="$facebook_auth" \
++		-v twitter_auth="$twitter_auth" \
++		-v google_auth="$google_auth" \
++		-v phone_auth="$phone_auth" \
++		-v static_pwd="$static_pwd" \
++		-v nopasswd="$nopasswd" \
++		-v weixin="$weixin" \
++		-v allow_tryout="$allow_tryout" \
++		-v weixin_absorb="$weixin_absorb" \
++		-v redpacket_auth="$redpacket_auth" \
++		-v weixin_mini="$weixin_mini" \
++		-v popups="$popups" \
++		-v popups_android="$popups_android" \
++		-v popups_ios="$popups_ios" \
++		-v weixin2="$weixin2" \
++		-v api_url="$api_url" \
++		-v whitelist="$whitelist" \
++		-v whitelist_https="$whitelist_https" '
+ 	function AddWhiteIp(addr) {
+ 		if(addr!="")print addr >> white_ip_file
+ 	}
+@@ -235,28 +277,25 @@
+ 	INDEX["HTTP_CONTENT_RANGE"]=45; INDEX["HTTP_ETAG"]=46; INDEX["HTTP_EXPIRES"]=47; INDEX["HTTP_LAST_MODIFIED"]=48; INDEX["HTTP_VERSION"]=49; INDEX["HTTP_STATUS"]=50; INDEX["HTTP_PRIV"]=51
+ 	INDEX["HTTP_EXT"]=52; INDEX["HTTP_BODY"]=53; INDEX["HTTP_MAX"]=54; INDEX["HTTP_PRIV3"]=55; INDEX["HTTP_X_REQUEST_WITH"]=56; INDEX["HTTP_SET_COOKIE"]=57; INDEX["HTTP_MAX"]=58
+ 
+-	FUN["api_switch"]="'$api_switch'"
+-	FUN["api_radius"]="'$api_radius'"
++	FUN["api_switch"]=api_switch
++	FUN["api_radius"]=api_radius
+ 	FUN["default"]="1"
+-	FUN["user_auth"]="'$user_auth'"
+-	FUN["coupon_auth"]="'$coupon_auth'"
+-	FUN["qq_auth"]="'$qq_auth'"
+-	FUN["weibo_auth"]="'$weibo_auth'"
+-	FUN["facebook_auth"]="'$facebook_auth'"
+-	FUN["twitter_auth"]="'$twitter_auth'"
+-	FUN["google_auth"]="'$google_auth'"
+-	FUN["phone_auth"]="'$phone_auth'"
+-	FUN["static_pwd"]="'$static_pwd'"
+-	FUN["nopasswd"]="'$nopasswd'"
+-	FUN["weixin"]="'$weixin'"
+-	FUN["allow_tryout"]="'$allow_tryout'"
+-	FUN["weixin_absorb"]="'$weixin_absorb'"
+-	FUN["redpacket_auth"]="'$redpacket_auth'"
+-	FUN["weixin_mini"]="'$weixin_mini'"
+-
+-    popups="'$popups'"
+-    popups_android="'$popups_android'"
+-    popups_ios="'$popups_ios'"
++	FUN["user_auth"]=user_auth
++	FUN["coupon_auth"]=coupon_auth
++	FUN["qq_auth"]=qq_auth
++	FUN["weibo_auth"]=weibo_auth
++	FUN["facebook_auth"]=facebook_auth
++	FUN["twitter_auth"]=twitter_auth
++	FUN["google_auth"]=google_auth
++	FUN["phone_auth"]=phone_auth
++	FUN["static_pwd"]=static_pwd
++	FUN["nopasswd"]=nopasswd
++	FUN["weixin"]=weixin
++	FUN["allow_tryout"]=allow_tryout
++	FUN["weixin_absorb"]=weixin_absorb
++	FUN["redpacket_auth"]=redpacket_auth
++	FUN["weixin_mini"]=weixin_mini
++
+ 	if (popups=="1") {
+ 		if (popups_ios=="1") {
+ 			POP_SW["ios"]="ON"
+@@ -280,7 +319,7 @@
+ 	if(FUN["weixin_absorb"]=="1"){
+ 		FUN["weixin2"]="1"
+ 	}else{
+-		FUN["weixin2"]="'$weixin2'"
++		FUN["weixin2"]=weixin2
+ 	}
+ 	if(FUN["redpacket_auth"]=="1"){
+ 		FUN["weixin2"]="1"
+@@ -288,10 +327,6 @@
+ 	if(FUN["weixin_mini"]=="1"){
+ 		FUN["weixin2"]="1"
+ 	}
+-	api_url="'$api_url'"
+-	whitelist="'$whitelist'"
+-	whitelist_https="'$whitelist_https'"
+-
+ 	}
+ 	function FormatPopups() {
+ 		HEADERS=""
+@@ -405,7 +440,7 @@
+ 				split(k,b,",")
+ 				for(ii in b){
+ 					if(b[ii]!=""){
+-					printf "%s ",b[ii] >"'$REDIRECT_DOMAIN'"
++					printf "%s ",b[ii] >redirect_domain
+ 					}
+ 				}
+ 			}
+@@ -508,19 +543,27 @@
+ 	local user_type_id=1 coupon_type_id=2 static_type_id=3 phone_type_id=4 qq_type_id=5 weibo_type_id=6 nopasswd_type_id=7 weixin_type_id=8,12 tryout_type_id=11 radius_type_id=13 facebook_type_id=15 redpacket_type_id=16 twitter_type_id=17 google_type_id=18 hotel_type_id=19
+ 	local MAX_TIME IDLE_TIME TYPE_ID ID conf
+ 	for i in user coupon qq weibo phone static nopasswd weixin tryout facebook twitter google redpacket hotel;do
+-		if [ "$(eval echo \$${i}_timeout)" = "1" ];then
+-			MAX_TIME=$(eval echo \$${i}_max_time)
+-			IDLE_TIME=$(eval echo \$${i}_idle_time)
+-			TYPE_ID=$(eval echo \$${i}_type_id)
+-			for ID in ${TYPE_ID//,/ } ;do
++		TIMEOUT_VAR="${i}_timeout"
++		MAX_TIME_VAR="${i}_max_time"
++		IDLE_TIME_VAR="${i}_idle_time"
++		TYPE_ID_VAR="${i}_type_id"
++		if [ "${!TIMEOUT_VAR}" = "1" ];then
++			MAX_TIME="${!MAX_TIME_VAR}"
++			IDLE_TIME="${!IDLE_TIME_VAR}"
++			TYPE_ID="${!TYPE_ID_VAR}"
++			if ! __is_decimal_uint "$MAX_TIME" || ! __is_decimal_uint "$IDLE_TIME"; then
++				continue
++			fi
++			MAX_TIME_SECONDS=$(($MAX_TIME * 60))
++			for ID in ${TYPE_ID//,/ };do
+ 				Append conf "$LINE_N" "auth_method_config {"
+ 				Append conf "$LINE_NT" "auth_method: $ID"
+-				Append conf "$LINE_NT" "max_auth_time: $((MAX_TIME*60))"
+-				Append conf "$LINE_NT" "max_idle_time: $IDLE_TIME"
++				Append conf "$LINE_NT" "max_auth_time: ${MAX_TIME_SECONDS:-0}"
++				Append conf "$LINE_NT" "max_idle_time: ${IDLE_TIME:-0}"
+ 				Append conf "$LINE_N" "}"
+ 			done
+ 		fi
+-	done
++		done
+ 
+ 	if [ "$weixin_absorb" = "1" ];then
+ 		Append conf "$LINE_N" "permit_no_http: true"
+--- 3.7.24/usr/sbin/iktimerd
++++ 3.7.25/usr/sbin/iktimerd
+@@ -2495,9 +2495,26 @@
+ 	local camera_now = os_time()
+ 	local __ikdb = sqlite3.open(dbfile)
+ 	if __ikdb then
++		local insert_stmt = __ikdb:prepare([[
++			insert into camera_control(
++				id,enabled,name,vendor,ip_addr,port,mac,status,
++				serialno,version,flag,last_time
++			) values(NULL,'yes',?,?,?,?,?,0,?,?,?,?);
++		]])
++		local update_stmt = __ikdb:prepare([[
++			update camera_control set
++				ip_addr = ?,status = 0,serialno = ?,version = ?,
++				flag = ?,last_time = ?
++			where mac = ?;
++		]])
++		if not insert_stmt or not update_stmt then
++			if insert_stmt then insert_stmt:finalize() end
++			if update_stmt then update_stmt:finalize() end
++			__ikdb:close()
++			return
++		end
+ 		__ikdb:exec("BEGIN TRANSACTION;")
+ 		for key_mac,table_mac in pairs(camera_info) do
+-			local sql = ""
+ 			local name = camera_info[key_mac].name
+ 			local vendor = camera_info[key_mac].vendor
+ 			local version = camera_info[key_mac].version
+@@ -2505,15 +2522,18 @@
+ 			local ip = camera_info[key_mac].ip
+ 			local httpPort = camera_info[key_mac].httpPort
+ 			local isNvr = camera_info[key_mac].isNvr
+-			sql = str_format("insert into camera_control(id,enabled,name,vendor,ip_addr,port,mac,status,serialno,version,flag,last_time) values(NULL,'yes','%s','%s','%s','%s','%s',0,'%s','%s',%d,%d);",name,vendor,ip,httpPort,key_mac,serialNo,version,isNvr,camera_now)
+-			local status = __ikdb:exec(sql)
+-			if status ~= sqlite3.OK then
+-				sql = ""
+-				sql = str_format("update camera_control set ip_addr = '%s',status = 0,serialno = '%s',version = '%s',flag = %d, last_time = %d where mac = '%s';",ip,serialNo,version,isNvr,camera_now,key_mac)
+-				__ikdb:exec(sql)
++			insert_stmt:bind_values(name,vendor,ip,httpPort,key_mac,serialNo,version,isNvr,camera_now)
++			local status = insert_stmt:step()
++			insert_stmt:reset()
++			if status ~= sqlite3.DONE then
++				update_stmt:bind_values(ip,serialNo,version,isNvr,camera_now,key_mac)
++				update_stmt:step()
++				update_stmt:reset()
+ 			end
+ 		end
+ 		__ikdb:exec("COMMIT;")
++		insert_stmt:finalize()
++		update_stmt:finalize()
+ 		__ikdb:close()
+ 	end
+ end

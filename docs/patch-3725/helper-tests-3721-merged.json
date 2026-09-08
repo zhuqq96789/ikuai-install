@@ -1,0 +1,332 @@
+{
+  "scope": "Offline Bash helper tests and SQLite in-memory validation; not router/VM validation",
+  "files_root": "work/rootfs-3.7.21-security-3725-patched-tree",
+  "bash": {
+    "path": "<workspace>/work/security-3.7.25/bash-5.2.37/bash",
+    "version": "GNU bash, version 5.2.37(1)-release (aarch64-apple-darwin25.6.0)"
+  },
+  "checks": [
+    {
+      "name": "Selected Bash exists",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip 'abc%20def'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip 'a+b'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip '%E4%B8%AD%E6%96%87'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip '%27quoted%27'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip '$(printf UNEXPECTED)'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip '%ZZ'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL literal roundtrip '%41%42'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "URL legacy quote stripping",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL string escaping roundtrip",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid integer '1+1'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid integer '1; SELECT 1'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid integer '7x'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid integer '$(printf UNEXPECTED)'",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid field/type name:srt",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid field/type name:text",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "SQL rejects invalid field/type bad-name:str",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Typed route dispatch preserves wg1 argument",
+      "status": "PASS",
+      "detail": "static4:wg1 10.0.0.1 192.0.2.0/24 1\nstatic6:wg1 fe80::1 2001:db8::/64 1\nip:route add default via 10.0.0.1 table 100\n"
+    },
+    {
+      "name": "Route rejects embedded field separator",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Changed shell scripts parse",
+      "status": "PASS",
+      "detail": "44 scripts; host Bash syntax only"
+    }
+  ],
+  "shell_syntax": [
+    {
+      "path": "etc/ikcommon",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "etc/inform/host_event.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "etc/setup/rc.console",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/ac/patch/include/load_config.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/ac/patch/include/urlcode.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/ac/batch_edit.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/check_varl.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/iproute.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/json.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/openvpn.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/route_rule.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/sqlite.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/urlcode.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/apcli_gx2600.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/apcli_mac80211.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/apcli_mediatek.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/apcli_qcawifi.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/mesh.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/include/wifi/qcaextend.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ac_group.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ac_net_optimize.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ac_server.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/acl.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/audit_url_log.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/dprotos.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/dprotos_l7.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ik_event_imlog.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ik_netoptimize.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/ipv6.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/mac_app.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/monitor_lanip.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/openvpn-client.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/pppoe_server.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/rc",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/send_log.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/static_rt.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/stream_ipport.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/url_black.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/utils/ap_load.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/utils/convert_config_old.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/utils/convert_config_old_mips.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/utils/monitor_process.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/wan.sh",
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "path": "usr/ikuai/script/webauth.sh",
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ]
+}

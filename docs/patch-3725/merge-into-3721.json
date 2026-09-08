@@ -1,0 +1,407 @@
+[
+  {
+    "path": "bin/busybox",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/defaults/config_db.conf",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/defaults/libproto.gz",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_cn.json",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_en.json",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/get_hosts/ik_hosts_v4_sg.json",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/ikcommon",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "etc/inform/host_event.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "etc/release",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/setup/rc.console",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/ssl/default",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/ssl/default/console_ssh_allowlist.enc",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/ssl/default/console_ssh_allowlist.sig",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "etc/ssl/default/device_auth.pem",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/bin/ik_audit_client",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/ikuai/ac/patch/include/load_config.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/ac/patch/include/urlcode.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/iklua/string/check.lua",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/include/ac/batch_edit.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/include/check_varl.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/iproute.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/json.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/openvpn.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/route_rule.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/sqlite.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/urlcode.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_gx2600.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_mac80211.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_mediatek.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/apcli_qcawifi.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/mesh.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/include/wifi/qcaextend.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/ac_group.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/ac_net_optimize.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/ac_server.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/acl.sh",
+    "action": "merge-file",
+    "status": "conflict",
+    "exit_code": 1,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/audit_url_log.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/dprotos.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/dprotos_l7.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/ik_event_imlog.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/ik_netoptimize.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/ipv6.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/mac_app.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/monitor_lanip.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/openvpn-client.sh",
+    "action": "merge-file",
+    "status": "conflict",
+    "exit_code": 1,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/pppoe_server.sh",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/ikuai/script/rc",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/send_log.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/static_rt.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/stream_ipport.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/url_black.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/ap_load.sh",
+    "action": "merge-file",
+    "status": "conflict",
+    "exit_code": 1,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/utils/async.lua",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/cloud_switch.lua",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/convert_config_old.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/convert_config_old_mips.sh",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/devdiscovery.lua",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/ldapinfo_load.lua",
+    "action": "copy-clean",
+    "status": "same-as-3.7.24"
+  },
+  {
+    "path": "usr/ikuai/script/utils/monitor_process.sh",
+    "action": "merge-file",
+    "status": "conflict",
+    "exit_code": 3,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/utils/submit.lua",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/ikuai/script/utils/update_hosts.sh",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/ikuai/script/wan.sh",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/script/webauth.sh",
+    "action": "merge-file",
+    "status": "conflict",
+    "exit_code": 3,
+    "stderr": ""
+  },
+  {
+    "path": "usr/ikuai/submit",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/ikuai/submit/submit3",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/lib/libdtalkd.so",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/lib/libreadline.so.7.0",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/lib/lua/lsqlite3.so",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/sbin/cre",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/sbin/ik_http_lua",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/sbin/ik_rc_client",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/sbin/iktimerd",
+    "action": "merge-file",
+    "status": "merged",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "path": "usr/sbin/miniupnpd",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/sbin/pmd",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  },
+  {
+    "path": "usr/share/usb.ids.gz",
+    "action": "skip",
+    "reason": "deferred or feature-conflict"
+  }
+]
