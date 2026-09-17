@@ -3,7 +3,7 @@
 ## 一键安装
 
 ```bash
-wget https://raw.githubusercontent.com/baby666666/ikuai-install/main/install-ikuai.sh && chmod +x install-ikuai.sh && ./install-ikuai.sh
+wget https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/install-ikuai.sh && chmod +x install-ikuai.sh && ./install-ikuai.sh
 ```
 
 ## 直接使用 img.gz
@@ -11,49 +11,49 @@ wget https://raw.githubusercontent.com/baby666666/ikuai-install/main/install-iku
 64 位：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.19_Build202504071142_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.19_Build202504071142_eth0-wan1-wanweb.img.gz
 ```
 
 32 位：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x32_3.7.19_Build202504071142_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x32_3.7.19_Build202504071142_eth0-wan1-wanweb.img.gz
 ```
 
 64 位 Enterprise 3.7.21：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise_Build202509221910_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise_Build202509221910_eth0-wan1-wanweb.img.gz
 ```
 
 64 位 Shell 3.7.21：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Build202508211345-shell_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Build202508211345-shell_eth0-wan1-wanweb.img.gz
 ```
 
 64 位 Enterprise 3.7.21 + Shell 完整功能：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull_Build202509221910_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull_Build202509221910_eth0-wan1-wanweb.img.gz
 ```
 
 64 位 Enterprise 3.7.21 + Shell 完整功能 + WireGuard 出口 WAN 分流 + 智能 DNS 分流：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202509221921_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202509221921_eth0-wan1-wanweb.img.gz
 ```
 
 保留 WireGuard 功能的 Web 版本升级包：
 
 ```text
-https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202509221921.bin
+https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202509221921.bin
 ```
 
 202607030351 版本的 `firmwareid=10001` 历史升级包：
 
 ```text
-https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202607030351_fw10001.bin
+https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-WG-DNS-Test_Build202607030351_fw10001.bin
 ```
 
 校验：
@@ -79,7 +79,7 @@ SIZE   46949736 bytes
 Web 版本升级包：
 
 ```text
-https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.25_Patch3725_Build202609090052.bin
+https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.25_Patch3725_Build202609090052.bin
 ```
 
 校验：
@@ -99,7 +99,7 @@ docs/patch-3725/README.md
 64 位 Enterprise 3.7.21 + Shell 完整功能 EFI 引导版：
 
 ```bash
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/baby666666/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-EFI_Build202509221910_eth0-wan1-wanweb.img.gz
+curl -O https://raw.githubusercontent.com/zhuqq96789/reinstall/main/reinstall.sh && bash reinstall.sh dd --img https://raw.githubusercontent.com/zhuqq96789/ikuai-install/main/iso/iKuai8_x64_3.7.21_Enterprise-ShellFull-EFI_Build202509221910_eth0-wan1-wanweb.img.gz
 ```
 
 64 位 Enterprise 3.7.21 + Shell 完整功能升级包：
